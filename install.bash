@@ -1,0 +1,208 @@
+#!/bin/bash
+
+# Install script for stochastic simulation framework.
+
+# Requirements: 64bit, Mac OS X or GNU/Linux platform
+#               If this does not cover your system this script will not work.
+#               If you need a version for your system let me know (BrianOSullivan@yahoo.com)
+#               If you want to run Mutect2 as your somatic caller (as in toyExample included)
+#               you will also need Java 8 / JRE or SDK 1.8 (check your version with "java -version").
+#               The script "prepGtMap.bash" which is run after (Mutect2) variant calling
+#               creates an R script. This script plots the contribution of each GATK filter
+#               to the number of false negatives in the output VCF.
+#               For this script to run you must have R (script, /usr/bin/Rscript)
+#               installed on your system together with libraries ggplot2, ggrepel, vctrs and forcats.
+#
+#               The total disc space taken up by the framework, once all associated tools
+#               (samtools, bwa etc.) have been locally installed and the toy example simulation run
+#               is about 1.7G. Aprox. 0.7G of this is taken up by BAM files created during simulation.
+#               These files may be deleted once the somatic variant caller has run
+#               (unless you need to look into alignment artefacts in caller output).
+#
+#               This install builds the following publically available tools for use in this framework
+#
+#                      bwa 0.7.17.
+#                      samtools 1.13
+#                      bedtools 2.29.2
+#
+#               You may if you wish use other versions of these tools you already have installed
+#               on your system. They will probably work, however as I have not tested it, I can not
+#               guarantee it. Links to all scripts and binaries used in this simulation framework
+#               are included under the top level bin directory (stochasticSimFramework/bin).
+#               You can copy them into another directory in your path and run them from there
+#               if you prefer.
+#               
+#               This script will also download ART read simulator (mountrainier2016) binaries
+#               and the gatk-package-4.2.2.0 jar file (containing MUTECT2 somatic variant caller).	
+	
+
+
+# Before running this script, run the following commands...
+
+# Make a directory into which the simulation framework and the set
+# of tools on which it depends will be installed.
+
+# mkdir stochasticSimFramework
+# cd stochasticSimFramework
+
+# Now download the simulation framework, either latest release of clone head of tree from gitHub.
+# tar zxvf ../../stochasticSim.tgz
+
+# Finally cd to the stochasticSim directory and run the install script.
+# cd stochasticSim
+# ./install.bash
+
+# Install starts here......
+
+# Install other tool dependancies in parent directory.
+cd ../
+mkdir bin
+
+date | tr '\012' ':'
+echo " Setting up framework dependancies."
+
+# Download & build required tools.
+
+date | tr '\012' ':'
+echo " Build bwa 0.7.17."
+
+# Bwa
+curl -L https://github.com/lh3/bwa/archive/refs/tags/v0.7.17.tar.gz | tar zxvf -
+cd bwa-0.7.17/
+make
+BWA_BUILD_PATH=${PWD}
+export BWA_BUILD_PATH
+cd ../
+# Leave a link in bin
+ln -s ../bwa-0.7.17/bwa bin/bwa
+echo "export ALIGNER="`pwd`"/bwa-0.7.17/bwa" >> bin/tool.path
+
+
+# Samtools
+
+date | tr '\012' ':'
+echo " Build samtools 1.13."
+curl -L https://github.com/samtools/samtools/releases/download/1.13/samtools-1.13.tar.bz2 | tar jxvf -
+cd samtools-1.13
+mkdir local_copy_output
+
+# If you are installing on a system without curses update accordingly.
+#./configure --prefix=${PWD}/local_copy_output --without-curses
+./configure --prefix=${PWD}/local_copy_output
+make 2>&1 | tee make.output
+make install
+# This is needed by sim. framework that links htslib.
+SAMTOOLS_BUILD_PATH=${PWD}
+HTSLIB_VERSION=`ls -d htslib-* | sed 's/.*-//'`
+export SAMTOOLS_BUILD_PATH
+export HTSLIB_VERSION
+cd ../
+ln -s ../samtools-1.13/local_copy_output/bin/samtools bin/samtools
+echo "export SAMTOOLS="`pwd`"/samtools-1.13/local_copy_output/bin/samtools" >> bin/tool.path
+
+# ART read simulator
+date | tr '\012' ':'
+echo " Install ART read simulator (mountrainier2016) binaries."	
+# Just install binaries..
+if [ "$(uname)" == "Darwin" ]; then
+    # Install under Mac OS X platform
+    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05macos64.tgz | tar zxvf -   
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    # Install under GNU/Linux platform
+    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05linux64.tgz | tar zxvf -
+else
+    echo "Platform \"$(uname)\" not supported...exiting..."
+    exit 1
+fi
+
+ln -s ../art_bin_MountRainier/art_illumina bin/art_illumina
+echo "export READ_SIMULATOR="`pwd`"/art_bin_MountRainier/art_illumina" >> bin/tool.path
+
+# Bedtools
+date | tr '\012' ':'
+echo " Build bedtools 2.29.2"	
+curl -L https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools-2.29.2.tar.gz | tar zxvf -
+cd bedtools2/
+make
+cd ../
+ln -s ../bedtools2/bin/bedtools bin/bedtools
+echo "export BEDTOOLS="`pwd`"/bedtools2/bin/bedtools" >> bin/tool.path
+
+
+# Now build stochastic sim. framework
+date | tr '\012' ':'
+echo " Build stochasticSim"	
+cd stochasticSim
+make all
+cd ../
+ln -s ../stochasticSim/bin/createDonorGenome bin/createDonorGenome
+ln -s ../stochasticSim/bin/liftover bin/liftover
+ln -s ../stochasticSim/bin/stochasticSpike bin/stochasticSpike
+ln -s ../stochasticSim/bin/targetRef bin/targetRef
+ln -s ../stochasticSim/bin/createPersonalisedMaskedTarget.bash bin/createPersonalisedMaskedTarget.bash
+ln -s ../stochasticSim/bin/generatePhasedBams.bash bin/generatePhasedBams.bash
+ln -s ../stochasticSim/bin/prepGtMap.bash bin/prepGtMap.bash
+ln -s ../stochasticSim/bin/realignAndMerge.bash bin/realignAndMerge.bash
+ln -s ../stochasticSim/bin/spikeIn.bash bin/spikeIn.bash
+
+echo "export CREATEDONORGENOME="`pwd`"/stochasticSim/bin/createDonorGenome" >> bin/tool.path
+echo "export LIFTOVER="`pwd`"/stochasticSim/bin/liftover" >> bin/tool.path
+echo "export STOCHASTIC_SPIKE="`pwd`"/stochasticSim/bin/stochasticSpike" >> bin/tool.path
+echo "export TARGETREF="`pwd`"/stochasticSim/bin/targetRef" >> bin/tool.path
+echo "export CONDENSE_LIFT="`pwd`"/stochasticSim/bin/condenseLift" >> bin/tool.path
+echo "export GTMAPPER="`pwd`"/stochasticSim/bin/gtMapper" >> bin/tool.path
+echo "export TWOWAYLIFTOVER="`pwd`"/stochasticSim/bin/2wayLiftover" >> bin/tool.path
+
+
+# Finally setup the reference, target bed and somatic variant caller that we will use in our toyExample.
+date | tr '\012' ':'
+echo " Setup stochasticSim toy example."	
+cd stochasticSim/toyExample
+# Unpack the reference and bed file etc. for this toy example.
+tar zxvf GRCh38.d1.vd1.HG00110.chr19.tgz
+ 
+# Setup caller (Mutect2)
+date | tr '\012' ':'
+echo " Download GATK 4.2.2.0 jar."
+wget https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip
+unzip gatk-4.2.2.0.zip
+rm gatk-4.2.2.0.zip
+cd ../../
+
+cp bin/tool.path stochasticSim/bin
+
+#The demo simulation included is based on the allele frequency distribution
+#mutant allele frequency spectrum of a diploid tumour expected under a neutral
+#evolutionary subclonal model with a clonal point-mass
+
+echo "The stochastic simulation framework setup is complete."
+echo "Check the output above and rectify any errors that may have occurred during installation."
+echo
+echo "Once the install has completed successfully you can test it out on the toy example included."
+echo "First source the 'tool.path' file to ensure the simulation uses"
+echo "the required versions of associated software tools."
+echo
+echo " # source "${PWD}"/stochasticSim/bin/toolpath"
+echo
+echo "Now, enter the toy example directory and run the simulation,"
+echo 
+echo " # cd "${PWD}"/stochasticSim/toyExample"
+echo " # ./run.bash 50 chr19_500KB.bed"
+echo 
+echo "Depending on your hardware this will take about 8 minutes to run."
+echo "Look at "${PWD}"stochasticSim/toyExample/MUTECT for the simulations results."
+echo "Along with the variant caller output, this directory will contain the following files"
+echo
+echo -e "\033[1mgtMapper.hap.ref:\033[0m     A tab seperated table mapping all entries in the caller filtered VCF output to their\n                      ground truth values in each haplotype."
+echo -e "\033[1mplotGtPieChart.R/pdf:\033[0m Source and associated pdf output to plot a pie chart of all caller filtered false negatives."
+echo -e "\033[1msummary.txt:\033[0m          An overall breakdown of where caller false positives/negatives occurred in this simulation\n                      and why."
+echo
+
+
+
+
+
+
+
+
+
