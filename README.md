@@ -18,7 +18,7 @@ If you want to run Mutect2 as your somatic caller (as in toyExample included)
 you will also need Java 8 / JRE or SDK 1.8 installed (check your version with "java -version").
 The "prepGtMap.bash" script included which plots the contribution of each GATK filter
 to the number of false negatives in the output VCF also requires R (script, /usr/bin/Rscript)
-installed  together with libraries ggplot2, ggrepel, vctrs and forcats to run.
+together with libraries ggplot2, ggrepel, vctrs and forcats.
 
 The total disc space taken up by the framework, once all associated tools
 (samtools, bwa etc.) are installed locally and the toy example simulation run
@@ -52,6 +52,7 @@ Neither the install or simulation process require root access to run.
 Before running this script, run the following commands.
 Make a directory into which the simulation framework and the set of tools on which it depends will be installed. Enter that directory
 ```
+cd <your download target directory>
 mkdir stochasticSimFramework
 cd stochasticSimFramework
 ```
@@ -74,21 +75,20 @@ Once the install has completed successfully you can test it out on the toy examp
 First source the 'tool.path' file to ensure the simulation uses
 the required versions of associated software tools.
 ```
-source /home/sully/stochasticSim/stochasticSim/bin/toolpath
+source <download path>/stochasticSim/stochasticSim/bin/toolpath
 ```
 Now, enter the toy example directory and run the simulation,
 ```
-cd /home/sully/stochasticSim/stochasticSim/toyExample
+cd <download path>/stochasticSim/stochasticSim/toyExample
 ./run.bash 50 chr19_500KB.bed
 ```
 Depending on your hardware this will take about 8 minutes to run.
-Look at /home/sully/stochasticSimstochasticSim/toyExample/MUTECT for the simulations results.
+Look at <download path>/stochasticSimstochasticSim/toyExample/MUTECT for the simulations results.
 Along with the variant caller output, this directory will contain the following files
 
-gtMapper.hap.ref:     A tab seperated table mapping all entries in the caller filtered VCF output to their
-                      ground truth values in each haplotype.
-plotGtPieChart.R/pdf: Source and associated pdf output to plot a pie chart of all caller filtered false negatives.
-summary.txt:          An overall breakdown of where caller false positives/negatives occurred in this simulation
-                      and why.
-
+| Filename | Description |
+| --- | --- |
+| gtMapper.hap.ref | A tab seperated table mapping all entries in the caller filtered VCF output to their ground truth values in each haplotype. |
+| plotGtPieChart.R/pdf | Source and associated pdf output to plot a pie chart of all caller filtered false negatives. |
+| summary.txt | An overall breakdown of where caller false positives/negatives occurred in this simulation and why. |
 
