@@ -12,19 +12,19 @@ Contact BrianOSullivan@yahoo.com with questions.
 ## System requirements
 
 This simulation framework runs on a 64bit, Mac OS X or GNU/Linux.
-If this does not cover your system this script will not work.
+If this does not cover your system it will not work.
 If you need a version for your system let me know (BrianOSullivan@yahoo.com).
 If you want to run Mutect2 as your somatic caller (as in toyExample included)
-you will also need Java 8 / JRE or SDK 1.8 (check your version with "java -version") installed.
-The script "prepGtMap.bash" script included which plots the contribution of each GATK filter
-to the number of false negatives in the VCF output VCF requires R (script, /usr/bin/Rscript)
-installed on your system together with libraries ggplot2, ggrepel, vctrs and forcats to run.
+you will also need Java 8 / JRE or SDK 1.8 installed (check your version with "java -version").
+The "prepGtMap.bash" script included which plots the contribution of each GATK filter
+to the number of false negatives in the output VCF also requires R (script, /usr/bin/Rscript)
+installed  together with libraries ggplot2, ggrepel, vctrs and forcats to run.
 
 The total disc space taken up by the framework, once all associated tools
 (samtools, bwa etc.) are installed locally and the toy example simulation run
-is about 1.7G. Aprox. 0.7G of this is taken up by BAM files created during simulation.
+is about 1.7G. Approximately 0.7G of this is taken up by BAM files created during simulation.
 These files may be deleted once the somatic variant caller has run
-(unless you need to look into alignment artefacts in caller output).
+(unless you need to look into alignment artefacts/issues in caller output).
 
 This install builds the following publically available tools for use with this framework.
 
@@ -44,25 +44,25 @@ if you prefer.
 This script will also download ART read simulator (mountrainier2016) binaries
 and the gatk-package-4.2.2.0 jar file (containing MUTECT2 somatic variant caller).
 
-This installation does not require root access to run.
+Neither the install or simulation process require root access to run.
 
 
 ## Installation
 
-Before running this script, run the following commands...
-Make a directory into which the simulation framework and the set of tools on which it depends will be installed.
+Before running this script, run the following commands.
+Make a directory into which the simulation framework and the set of tools on which it depends will be installed. Enter that directory
 ```
 mkdir stochasticSimFramework
 cd stochasticSimFramework
 ```
 
-Now download the simulation framework, either latest release of clone head of tree from gitHub.
+Now download the simulation framework, either latest release of clone the head of tree from gitHub.
 ```
 # tar zxvf ../../stochasticSim.tgz
 ```
 
 Next cd to the stochasticSim directory. Look at the installation script to find out what it will install.
-Finally run the install script.
+Run the install script, checking for any errors in the output and if required rectify any issues that may have occurred during installation.
 ```
 cd stochasticSim
 more ./install.bash
@@ -70,4 +70,25 @@ more ./install.bash
 ```
 
 ## Getting started
+Once the install has completed successfully you can test it out on the toy example included.
+First source the 'tool.path' file to ensure the simulation uses
+the required versions of associated software tools.
+```
+source /home/sully/stochasticSim/stochasticSim/bin/toolpath
+```
+Now, enter the toy example directory and run the simulation,
+```
+cd /home/sully/stochasticSim/stochasticSim/toyExample
+./run.bash 50 chr19_500KB.bed
+```
+Depending on your hardware this will take about 8 minutes to run.
+Look at /home/sully/stochasticSimstochasticSim/toyExample/MUTECT for the simulations results.
+Along with the variant caller output, this directory will contain the following files
+
+gtMapper.hap.ref:     A tab seperated table mapping all entries in the caller filtered VCF output to their
+                      ground truth values in each haplotype.
+plotGtPieChart.R/pdf: Source and associated pdf output to plot a pie chart of all caller filtered false negatives.
+summary.txt:          An overall breakdown of where caller false positives/negatives occurred in this simulation
+                      and why.
+
 
