@@ -160,6 +160,8 @@ echo " Setup stochasticSim toy example."
 cd stochasticSim/toyExample
 # Unpack the reference and bed file etc. for this toy example.
 tar zxvf GRCh38.d1.vd1.HG00110.chr19.tgz
+# Index it.
+../../bwa-0.7.17/bwa index -a bwtsw GRCh38.d1.vd1.chr19.fa
  
 # Setup caller (Mutect2)
 date | tr '\012' ':'
