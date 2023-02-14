@@ -39,7 +39,8 @@ tools if you have them installed. They will probably work, however as I have not
 I can not guarantee it. Links to all scripts and binaries used in this simulation framework
 are included under the top level bin directory (stochasticSimFramework/bin).
 You can copy them into another directory in your path and run them from there
-if you prefer.
+if you prefer. The install script uses curl to download these dependancies.
+You must have curl installed on your system of the script will not work (ie., apt install curl).
 
 This script will also download ART read simulator (mountrainier2016) binaries
 and the gatk-package-4.2.2.0 jar file (containing MUTECT2 somatic variant caller).
