@@ -26,14 +26,9 @@ else
     flankingLength=${6}
 fi
 
-
 refPrefix=`echo ${3} | sed -e 's/.*\///1' -e 's/\.fa$//1'`
-echo $refPrefix
-
 
 bedPrefix=`echo ${5} | sed -e 's/.*\///1' -e 's/\.bed.*$//1'`
-echo $bedPrefix
-
 
 # Subset standard reference fasta passed in here, keeping only chr1-22XY (ie., everything before chrM).
 date | tr '\012' ':'
