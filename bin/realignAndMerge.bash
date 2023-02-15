@@ -22,14 +22,13 @@
 if [ -z ${ALIGNER+xyz} ]; then ALIGNER=`which bwa`; fi
 if [ -z ${SAMTOOLS+xyz} ]; then SAMTOOLS=`which samtools`; fi
 
-# Setup the number of cores we are using. Guess 12 is it has not been setup by the user.
-if [ -z ${SNGS_NUM_CORES+x} ]; then SNGS_NUM_CORES="12"; fi
+# Setup the default number of cores we are using for this job (in samtools/bwa)
+# Remember adding additional threads also means memory needs to be assigned also.
+# More threads gets the job done faster but depending on your system you will run out of RAM if you don't get the balance right.
+if [ -z ${SNGS_NUM_CORES+x} ]; then SNGS_NUM_CORES="4"; fi
 
 hap1BamPrefix=`echo ${1} | sed -e 's/.*\///1' -e 's/\.bam$//1'`
-#echo $hap1BamPrefix
-
 hap2BamPrefix=`echo ${2} | sed -e 's/.*\///1' -e 's/\.bam$//1'`
-#echo $hap2BamPrefix
 
 # Reads coming from the simulation at this stage are 'perfectly' mapped.
 # This is unrealistic.
