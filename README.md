@@ -76,15 +76,15 @@ Once the install has completed successfully you can test it out on the toy examp
 First source the 'tool.path' file to ensure the simulation uses
 the required versions of associated software tools.
 ```
-source <install path>/stochasticSim/stochasticSim/bin/tool.path
+source <install path>/stochasticSimFramework/stochasticSim-main/bin/tool.path
 ```
 Now, enter the toy example directory and run the simulation,
 ```
-cd <install path>/stochasticSim/stochasticSim/toyExample
+cd <install path>/stochasticSimFramework/stochasticSim-main/toyExample
 ./run.bash 50 chr19_500KB.bed
 ```
 Depending on your hardware this will take about 8 minutes to run.
-Look at <download path>/stochasticSimstochasticSim/toyExample/MUTECT for the simulations results.
+Look at <install path>/stochasticSimFramework/stochasticSim-main/toyExample/MUTECT for the simulations results.
 Along with the variant caller output, this directory will contain the following files
 
 | Filename | Description |
