@@ -66,19 +66,17 @@ echo " Setting up framework dependancies."
 
 # Download & build required tools.
 
+# Bwa
 date | tr '\012' ':'
 echo " Build bwa 0.7.17."
-
-# Bwa
 git clone https://github.com/lh3/bwa.git
-make -C bwa
+make -C bwa || (echo -e "\n\033[7mBWA Build failed. Resolve issues before proceeding.\033[0m";exit 1)
 # Leave a link in bin
 ln -s ../bwa/bwa bin/bwa
 echo "export ALIGNER="`pwd`"/bwa/bwa" >> bin/tool.path
 
 
 # Samtools
-
 date | tr '\012' ':'
 echo " Build samtools 1.13."
 curl -L https://github.com/samtools/samtools/releases/download/1.13/samtools-1.13.tar.bz2 | tar jxvf -
@@ -88,8 +86,8 @@ mkdir local_copy_output
 # If you are installing on a system without curses update accordingly.
 #./configure --prefix=${PWD}/local_copy_output --without-curses
 ./configure --prefix=${PWD}/local_copy_output
-make 2>&1 | tee make.output
-make install
+make || (echo -e "\n\033[7mSAMTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 2)
+make install || (echo -e "\n\033[7mSAMTOOLS install failed. Resolve issues before proceeding.\033[0m";exit 3)
 # This is needed by sim. framework that links htslib.
 SAMTOOLS_BUILD_PATH=${PWD}
 HTSLIB_VERSION=`ls -d htslib-* | sed 's/.*-//'`
@@ -111,7 +109,7 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05linux64.tgz | tar zxvf -
 else
     echo "Platform \"$(uname)\" not supported...exiting..."
-    exit 1
+    exit 4
 fi
 
 ln -s ../art_bin_MountRainier/art_illumina bin/art_illumina
@@ -122,7 +120,7 @@ date | tr '\012' ':'
 echo " Build bedtools 2.29.2"	
 curl -L https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools-2.29.2.tar.gz | tar zxvf -
 cd bedtools2/
-make
+make || (echo -e "\n\033[7mBEDTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 5)
 cd ../
 ln -s ../bedtools2/bin/bedtools bin/bedtools
 echo "export BEDTOOLS="`pwd`"/bedtools2/bin/bedtools" >> bin/tool.path
@@ -132,7 +130,7 @@ echo "export BEDTOOLS="`pwd`"/bedtools2/bin/bedtools" >> bin/tool.path
 date | tr '\012' ':'
 echo " Build ${stochasticSimDirName}"	
 cd ${stochasticSimDirName}
-make all
+make all || (echo -e "\n\033[7mSTOCHASTICSIM Build failed. Resolve issues before proceeding.\033[0m";exit 6)
 cd ../
 ln -s ../${stochasticSimDirName}/bin/createDonorGenome bin/createDonorGenome
 ln -s ../${stochasticSimDirName}/bin/liftover bin/liftover
