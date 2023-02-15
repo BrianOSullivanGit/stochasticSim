@@ -186,7 +186,7 @@ echo "Once the install has completed successfully you can test it out on the toy
 echo "First source the 'tool.path' file to ensure the simulation uses"
 echo "the required versions of associated software tools."
 echo
-echo " # source ${PWD}/${stochasticSimDirName}/bin/toolpath"
+echo " # source ${PWD}/${stochasticSimDirName}/bin/tool.path"
 echo
 echo "Now, enter the toy example directory and run the simulation,"
 echo 
