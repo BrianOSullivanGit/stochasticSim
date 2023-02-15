@@ -70,7 +70,7 @@ echo " Setting up framework dependancies."
 date | tr '\012' ':'
 echo " Build bwa 0.7.17."
 git clone https://github.com/lh3/bwa.git
-make -C bwa || {echo -e "\n\033[7mBWA Build failed. Resolve issues before proceeding.\033[0m";exit 1}
+make -C bwa || { echo -e "\n\033[7mBWA Build failed. Resolve issues before proceeding.\033[0m";exit 1; }
 # Leave a link in bin
 ln -s ../bwa/bwa bin/bwa
 echo "export ALIGNER="`pwd`"/bwa/bwa" >> bin/tool.path
@@ -79,15 +79,15 @@ echo "export ALIGNER="`pwd`"/bwa/bwa" >> bin/tool.path
 # Samtools
 date | tr '\012' ':'
 echo " Build samtools 1.13."
-curl -L https://github.com/samtools/samtools/releases/download/1.13/samtools-1.13.tar.bz2 | tar jxvf - || {echo -e "\n\033[7mSAMTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 2}
+curl -L https://github.com/samtools/samtools/releases/download/1.13/samtools-1.13.tar.bz2 | tar jxvf - || { echo -e "\n\033[7mSAMTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 2; }
 cd samtools-1.13
 mkdir local_copy_output
 
 # If you are installing on a system without curses update accordingly.
 #./configure --prefix=${PWD}/local_copy_output --without-curses
 ./configure --prefix=${PWD}/local_copy_output
-make || {echo -e "\n\033[7mSAMTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 3}
-make install || {echo -e "\n\033[7mSAMTOOLS install failed. Resolve issues before proceeding.\033[0m";exit 4}
+make || { echo -e "\n\033[7mSAMTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 3; }
+make install || { echo -e "\n\033[7mSAMTOOLS install failed. Resolve issues before proceeding.\033[0m";exit 4; }
 # This is needed by sim. framework that links htslib.
 SAMTOOLS_BUILD_PATH=${PWD}
 HTSLIB_VERSION=`ls -d htslib-* | sed 's/.*-//'`
@@ -103,10 +103,10 @@ echo " Install ART read simulator (mountrainier2016) binaries."
 # Just install binaries..
 if [ "$(uname)" == "Darwin" ]; then
     # Install under Mac OS X platform
-    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05macos64.tgz | tar zxvf - || {echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 3} 
+    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05macos64.tgz | tar zxvf - || { echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 3; } 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     # Install under GNU/Linux platform
-    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05linux64.tgz | tar zxvf - || {echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 4} 
+    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05linux64.tgz | tar zxvf - || { echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 4; } 
 else
     echo "Platform \"$(uname)\" not supported...exiting..."
     exit 5
@@ -118,9 +118,9 @@ echo "export READ_SIMULATOR="`pwd`"/art_bin_MountRainier/art_illumina" >> bin/to
 # Bedtools
 date | tr '\012' ':'
 echo " Build bedtools 2.29.2"	
-curl -L https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools-2.29.2.tar.gz | tar zxvf - || {echo -e "\n\033[7mBEDTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 6} 
+curl -L https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools-2.29.2.tar.gz | tar zxvf - || { echo -e "\n\033[7mBEDTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 6; } 
 cd bedtools2/
-make || (echo -e "\n\033[7mBEDTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 7)
+make || { echo -e "\n\033[7mBEDTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 7; }
 cd ../
 ln -s ../bedtools2/bin/bedtools bin/bedtools
 echo "export BEDTOOLS="`pwd`"/bedtools2/bin/bedtools" >> bin/tool.path
@@ -130,7 +130,7 @@ echo "export BEDTOOLS="`pwd`"/bedtools2/bin/bedtools" >> bin/tool.path
 date | tr '\012' ':'
 echo " Build ${stochasticSimDirName}"	
 cd ${stochasticSimDirName}
-make all || (echo -e "\n\033[7mSTOCHASTICSIM Build failed. Resolve issues before proceeding.\033[0m";exit 8)
+make all || { echo -e "\n\033[7mSTOCHASTICSIM Build failed. Resolve issues before proceeding.\033[0m";exit 8; }
 cd ../
 ln -s ../${stochasticSimDirName}/bin/createDonorGenome bin/createDonorGenome
 ln -s ../${stochasticSimDirName}/bin/liftover bin/liftover
@@ -163,7 +163,7 @@ tar zxvf GRCh38.d1.vd1.HG00110.chr19.tgz
 # Setup caller (Mutect2)
 date | tr '\012' ':'
 echo " Download GATK 4.2.2.0 jar."
-wget https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip || {echo -e "\n\033[7mGATK JAR download failed. Resolve issues before proceeding.\033[0m";exit 9} 
+wget https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip || { echo -e "\n\033[7mGATK JAR download failed. Resolve issues before proceeding.\033[0m";exit 9; } 
 unzip gatk-4.2.2.0.zip
 rm gatk-4.2.2.0.zip
 cd ../../
