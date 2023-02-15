@@ -125,12 +125,21 @@ cd ../
 ln -s ../bedtools2/bin/bedtools bin/bedtools
 echo "export BEDTOOLS="`pwd`"/bedtools2/bin/bedtools" >> bin/tool.path
 
+# Datamash
+curl -L http://ftp.gnu.org/gnu/datamash/datamash-1.3.tar.gz | tar zxvf - || { echo -e "\n\033[7mDATAMASH download failed. Resolve issues before proceeding.\033[0m";exit 7; } 
+cd datamash-1.3
+./configure
+make || { echo -e "\n\033[7mDATAMASH Build failed. Resolve issues before proceeding.\033[0m";exit 8; }
+make check || { echo -e "\n\033[7mDATAMASH Build check failed. Resolve issues before proceeding.\033[0m";exit 9; }
+cd ../
+ln -s ../datamash-1.3/datamash bin/datamash
+echo "export DATAMASH="`pwd`"/datamash-1.3/datamash" >> bin/tool.path
 
 # Now build stochastic sim. framework
 date | tr '\012' ':'
 echo " Build ${stochasticSimDirName}"	
 cd ${stochasticSimDirName}
-make all || { echo -e "\n\033[7mSTOCHASTICSIM Build failed. Resolve issues before proceeding.\033[0m";exit 8; }
+make all || { echo -e "\n\033[7mSTOCHASTICSIM Build failed. Resolve issues before proceeding.\033[0m";exit 10; }
 cd ../
 ln -s ../${stochasticSimDirName}/bin/createDonorGenome bin/createDonorGenome
 ln -s ../${stochasticSimDirName}/bin/liftover bin/liftover
@@ -158,12 +167,12 @@ cd ${stochasticSimDirName}/toyExample
 # Unpack the reference and bed file etc. for this toy example.
 tar zxvf GRCh38.d1.vd1.HG00110.chr19.tgz
 # Index it.
-../../bwa/bwa index -a bwtsw GRCh38.d1.vd1.chr19.fa { echo -e "\n\033[7mFailed to inndex genome. Resolve issues before proceeding.\033[0m";exit 9; }
+../../bwa/bwa index -a bwtsw GRCh38.d1.vd1.chr19.fa { echo -e "\n\033[7mFailed to inndex genome. Resolve issues before proceeding.\033[0m";exit 11; }
  
 # Setup caller (Mutect2)
 date | tr '\012' ':'
 echo " Download GATK 4.2.2.0 jar."
-wget https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip || { echo -e "\n\033[7mGATK JAR download failed. Resolve issues before proceeding.\033[0m";exit 10; } 
+wget https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip || { echo -e "\n\033[7mGATK JAR download failed. Resolve issues before proceeding.\033[0m";exit 12; } 
 unzip gatk-4.2.2.0.zip
 rm gatk-4.2.2.0.zip
 cd ../../
@@ -174,7 +183,7 @@ cp bin/tool.path ${stochasticSimDirName}/bin
 
 # Check if the links to any of these tools are broken.
 ls bin | while read line; do if [ ! -e bin/${line} ]; then echo ${line}; fi; done > $$.prob.lst
-if [ -s $$.prob.lst ]; then echo -e "\n\033[7mINSTALL ERROR:\033[0m There was a problem building the following tools,\n"; cat $$.prob.lst;echo -e "\nCheck back through the install output to resolve the issue before proceeding."; rm $$.prob.lst; exit 11; fi
+if [ -s $$.prob.lst ]; then echo -e "\n\033[7mINSTALL ERROR:\033[0m There was a problem building the following tools,\n"; cat $$.prob.lst;echo -e "\nCheck back through the install output to resolve the issue before proceeding."; rm $$.prob.lst; exit 13; fi
 rm $$.prob.lst
 
 #The demo simulation included is based on the allele frequency distribution
