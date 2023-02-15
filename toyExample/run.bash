@@ -3,7 +3,7 @@
 target=`echo ${2} | sed 's/\.bed$//1'`
 hapDepth=`bc -l <<< "scale=0;${1}/2"`
 
-echo -e "\033[7mStart Simulaion for ${target} at ${1X} for donor HG00110\033[0m\n"
+echo -e "\033[7mStart Simulaion for ${target} at ${1}X for donor HG00110\033[0m\n"
 
 printf "Create a phased, personalised reference genome that is modified to reflect target region of interest.
 All locations outside the target area will have their contents replaced with 'N' bases to avoid reads
@@ -98,7 +98,7 @@ cd MUTECT
 date | tr '\012' ':'
 echo -e ">>>>>> Done, \033[1msomatic variant caller and ground truth map.\033[0m"
 echo
-echo -e "\033[7mSimulaion for ${target} at ${1X}\033, donor HG00110 complete\033[0m"
+echo -e "\033[7mSimulaion for ${target} at ${1}X, donor HG00110 complete\033[0m"
 echo
 echo "Look in "${PWD}" for the simulations results."
 echo "Along with the variant caller output, this directory will contain the following files"
