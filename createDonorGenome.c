@@ -487,7 +487,7 @@ int main(int argc,char* argv[])
 
    // Close Liftover file.
    // We will use this file to map from reference genome to donor genome & vice versa.
-   fprintf(stderr, "%s: Done.\n",argv[0]);
+   // fprintf(stderr, "%s: Done.\n",argv[0]);
    fclose(liftFp);
 
    return 0;
