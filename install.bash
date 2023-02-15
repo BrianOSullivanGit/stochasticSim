@@ -70,15 +70,11 @@ date | tr '\012' ':'
 echo " Build bwa 0.7.17."
 
 # Bwa
-curl -L https://github.com/lh3/bwa/archive/refs/tags/v0.7.17.tar.gz | tar zxvf -
-cd bwa-0.7.17/
-make
-BWA_BUILD_PATH=${PWD}
-export BWA_BUILD_PATH
-cd ../
+git clone https://github.com/lh3/bwa.git
+make -C bwa
 # Leave a link in bin
-ln -s ../bwa-0.7.17/bwa bin/bwa
-echo "export ALIGNER="`pwd`"/bwa-0.7.17/bwa" >> bin/tool.path
+ln -s ../bwa/bwa bin/bwa
+echo "export ALIGNER="`pwd`"/bwa/bwa" >> bin/tool.path
 
 
 # Samtools
