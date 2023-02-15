@@ -172,6 +172,11 @@ cd ../../
 
 cp bin/tool.path ${stochasticSimDirName}/bin
 
+# Check if the links to any of these tools are broken.
+ls | while read line; do if [ ! -e ${line} ]; then echo ${line}; fi; done > $$.prob.lst
+if [ -s $$.prob.lst ]; then echo -e "\n\033[7mINSTALL ERROR:\033[0m There was a problem building the following tools,\n"; cat $$.prob.lst;echo -e "\nCheck back through the install output to resolve the issue before proceeding."; rm $$.prob.lst; exit 2; fi
+rm $$.prob.lst
+
 #The demo simulation included is based on the allele frequency distribution
 #mutant allele frequency spectrum of a diploid tumour expected under a neutral
 #evolutionary subclonal model with a clonal point-mass
