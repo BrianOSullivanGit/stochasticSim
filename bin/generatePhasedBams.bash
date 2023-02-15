@@ -21,12 +21,7 @@ if [ -z ${SAMTOOLS+xyz} ]; then SAMTOOLS=`which samtools`; fi
 if [ -z ${READ_SIMULATOR+xyz} ]; then READ_SIMULATOR=`which art_illumina"`; fi
 
 hap1RefPrefix=`echo ${1} | sed -e 's/.*\///1' -e 's/\.fa$//1'`
-echo $hap1RefPrefix
-
 hap2RefPrefix=`echo ${2} | sed -e 's/.*\///1' -e 's/\.fa$//1'`
-echo $hap2RefPrefix
-
-
 
 # Simulate reads, sam format.
 # Remember if you change READ_SIMULATOR above you obviously need to
