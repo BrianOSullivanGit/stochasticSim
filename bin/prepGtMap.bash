@@ -17,7 +17,8 @@
 # To use the set of tools against which this script has been tested please
 # source the 'tool.path' file in the simulation framework bin directory before running it.
 if [ -z ${TWOWAYLIFTOVER+xyz} ]; then TWOWAYLIFTOVER=`which 2wayLiftover`; fi
-if [ -z ${GTMAPPER+xyz} ]; then READ_SIMULATOR=`which gtMapper"`; fi
+if [ -z ${GTMAPPER+xyz} ]; then GTMAPPER=`which gtMapper"`; fi
+if [ -z ${DATAMASH+xyz} ]; then DATAMASH=`which datamash"`; fi
 
 # Note:
 # Do we need to reorder by haplotype, then reference coordinate order?
@@ -124,9 +125,9 @@ This is because the final sequencing data is made up of sequencing data from bot
 fi
 
 
-cat gtMapper.hap.ref|awk '{if($3!="PASS") print $0}' | egrep '(PASS|MASK)'| sed 's/\t[^\t]*;[^\t]*\t/\tmultiple_filter_failures\t/1' | datamash --sort  --group 3 count 3 >  delme.$$
+cat gtMapper.hap.ref|awk '{if($3!="PASS") print $0}' | egrep '(PASS|MASK)'| sed 's/\t[^\t]*;[^\t]*\t/\tmultiple_filter_failures\t/1' | ${DATAMASH} --sort  --group 3 count 3 >  delme.$$
 
-totalFiltered=`cat delme.$$| datamash sum 2`
+totalFiltered=`cat delme.$$| ${DATAMASH} sum 2`
 
 printf "
 False Negatives.
