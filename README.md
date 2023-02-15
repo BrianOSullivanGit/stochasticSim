@@ -58,12 +58,12 @@ mkdir stochasticSimFramework
 cd stochasticSimFramework
 ```
 
-Now download the simulation framework, either latest release of clone the head of tree from gitHub.
+Now download and unpack the simulation framework, either latest release or main branch from gitHub, for example using main,
 ```
-# tar zxvf ../../stochasticSim.tgz
+unzip <download path>/stochasticSim-main.zip
 ```
 
-Next cd to the stochasticSim directory. Look at the installation script to find out what it will install.
+Enter the stochasticSim directory. Look at the installation script to find out what it will install.
 Run the install script, checking for any errors in the output and if required rectify any issues that may have occurred during installation.
 ```
 cd stochasticSim
@@ -76,11 +76,11 @@ Once the install has completed successfully you can test it out on the toy examp
 First source the 'tool.path' file to ensure the simulation uses
 the required versions of associated software tools.
 ```
-source <download path>/stochasticSim/stochasticSim/bin/toolpath
+source <install path>/stochasticSim/stochasticSim/bin/tool.path
 ```
 Now, enter the toy example directory and run the simulation,
 ```
-cd <download path>/stochasticSim/stochasticSim/toyExample
+cd <install path>/stochasticSim/stochasticSim/toyExample
 ./run.bash 50 chr19_500KB.bed
 ```
 Depending on your hardware this will take about 8 minutes to run.
