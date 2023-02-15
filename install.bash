@@ -68,7 +68,7 @@ echo " Setting up framework dependancies."
 
 # Bwa
 date | tr '\012' ':'
-echo " Build bwa 0.7.17."
+echo " Build bwa head."
 git clone https://github.com/lh3/bwa.git
 make -C bwa || { echo -e "\n\033[7mBWA Build failed. Resolve issues before proceeding.\033[0m";exit 1; }
 # Leave a link in bin
@@ -158,21 +158,23 @@ cd ${stochasticSimDirName}/toyExample
 # Unpack the reference and bed file etc. for this toy example.
 tar zxvf GRCh38.d1.vd1.HG00110.chr19.tgz
 # Index it.
-../../bwa-0.7.17/bwa index -a bwtsw GRCh38.d1.vd1.chr19.fa
+../../bwa/bwa index -a bwtsw GRCh38.d1.vd1.chr19.fa { echo -e "\n\033[7mFailed to inndex genome. Resolve issues before proceeding.\033[0m";exit 9; }
  
 # Setup caller (Mutect2)
 date | tr '\012' ':'
 echo " Download GATK 4.2.2.0 jar."
-wget https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip || { echo -e "\n\033[7mGATK JAR download failed. Resolve issues before proceeding.\033[0m";exit 9; } 
+wget https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip || { echo -e "\n\033[7mGATK JAR download failed. Resolve issues before proceeding.\033[0m";exit 10; } 
 unzip gatk-4.2.2.0.zip
 rm gatk-4.2.2.0.zip
 cd ../../
 
 cp bin/tool.path ${stochasticSimDirName}/bin
 
+# Make sure we have a full  set of tools (there should be X of them TODO!!!! update this!!)
+
 # Check if the links to any of these tools are broken.
-ls | while read line; do if [ ! -e ${line} ]; then echo ${line}; fi; done > $$.prob.lst
-if [ -s $$.prob.lst ]; then echo -e "\n\033[7mINSTALL ERROR:\033[0m There was a problem building the following tools,\n"; cat $$.prob.lst;echo -e "\nCheck back through the install output to resolve the issue before proceeding."; rm $$.prob.lst; exit 10; fi
+ls bin | while read line; do if [ ! -e bin/${line} ]; then echo ${line}; fi; done > $$.prob.lst
+if [ -s $$.prob.lst ]; then echo -e "\n\033[7mINSTALL ERROR:\033[0m There was a problem building the following tools,\n"; cat $$.prob.lst;echo -e "\nCheck back through the install output to resolve the issue before proceeding."; rm $$.prob.lst; exit 11; fi
 rm $$.prob.lst
 
 #The demo simulation included is based on the allele frequency distribution
