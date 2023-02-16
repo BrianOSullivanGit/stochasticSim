@@ -17,7 +17,7 @@
 # To use the set of tools against which this script has been tested please
 # source the 'tool.path' file in the simulation framework bin directory before running it.
 if [ -z ${TWOWAYLIFTOVER+xyz} ]; then TWOWAYLIFTOVER=`which 2wayLiftover`; fi
-if [ -z ${GTMAPPER+xyz} ]; then GTMAPPER=`which gtMapper"`; fi
+if [ -z ${GTMAPPER+xyz} ]; then GTMAPPER=`which gtMapper`; fi
 if [ -z ${DATAMASH+xyz} ]; then DATAMASH=`which datamash"`; fi
 
 # Note:
