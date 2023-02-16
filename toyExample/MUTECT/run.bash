@@ -6,6 +6,9 @@
 # The path to the set of tools that have been tested is specified in a file
 # tool.path that is located in ..../stochasticSim-x.y/bin.
 
+if [ -z ${SAMTOOLS+xyz} ]; then SAMTOOLS=`which samtools`; fi
+
+
 DT_STRING=`date -Iseconds`
 
 TUMOUR_WITH_RG=`echo ${1} | sed -e "s/\.bam$/.rg.bam/1" -e "s/.*\///1"`
@@ -19,15 +22,15 @@ VCF_NAME=`echo ${1} | sed -e "s/.*\///1" -e 's/^[TN]_//1' -e 's/\.bam$//1'`
 
 date | tr '\012' ' '
 echo "Adding read groups.."
-samtools addreplacerg -r ID:HG00110 -r DT:${DT_STRING} -r SM:T_HG00110 ${1} -o ${TUMOUR_WITH_RG}
+${SAMTOOLS} addreplacerg -r ID:HG00110 -r DT:${DT_STRING} -r SM:T_HG00110 ${1} -o ${TUMOUR_WITH_RG}
 DT_STRING=`date -Iseconds`
-samtools addreplacerg -r ID:HG00110 -r DT:${DT_STRING} -r SM:N_HG00110 ${2} -o ${NORMAL_WITH_RG}
+${SAMTOOLS} addreplacerg -r ID:HG00110 -r DT:${DT_STRING} -r SM:N_HG00110 ${2} -o ${NORMAL_WITH_RG}
 
 
 LATEST_MUTECT_JAR="../gatk-4.2.2.0/gatk-package-4.2.2.0-local.jar"
 
-samtools index ${TUMOUR_WITH_RG}
-samtools index ${NORMAL_WITH_RG}
+${SAMTOOLS} index ${TUMOUR_WITH_RG}
+${SAMTOOLS} index ${NORMAL_WITH_RG}
 
 TUMOUR_SAMPLE=`${SAMTOOLS} view -H ${TUMOUR_WITH_RG} | grep -m1 '@RG.*SM:' | sed -e 's/@RG.*SM://1' -e 's/[[:space:]]*$//1'`
 NORMAL_SAMPLE=`${SAMTOOLS} view -H ${NORMAL_WITH_RG} | grep -m1 '@RG.*SM:' | sed -e 's/@RG.*SM://1' -e 's/[[:space:]]*$//1'`
