@@ -28,13 +28,13 @@ hap2RefPrefix=`echo ${2} | sed -e 's/.*\///1' -e 's/\.fa$//1'`
 # update command line switches below accordingly.
 date | tr '\012' ':'
 echo " Simulating phased reads for pre-tumour sample.."
-${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap1RefPrefix}_${6}"
+${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap1RefPrefix}_${6}"  || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m";exit 1; }
 #${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} -c ${4} -m ${5} -s 10 -o "T_${hap1RefPrefix}_${6}"
 
 # Remove the paired end fastq files, we won't need those.
 rm T_${hap1RefPrefix}_${6}[12].fq
 
-${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap2RefPrefix}_${6}"
+${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap2RefPrefix}_${6}" || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m";exit 1; }
 #${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} -c ${4} -m ${5} -s 10 -o "T_${hap2RefPrefix}_${6}"
 
 # Again, remove redundant paired end fastq files.
@@ -52,13 +52,13 @@ cat T_${hap2RefPrefix}_${6}.sam | sed -e "s/^[^@]/T_X2_&/1" > T_${hap2RefPrefix}
 # Sort, index and convert to (perfectly mapped) phased pre-tumour BAMs.
 date | tr '\012' ':'
 echo " Sort, index and convert to T_${hap1RefPrefix}_${6}.bam."
-${SAMTOOLS} sort T_${hap1RefPrefix}_${6}.tmp.sam > T_${hap1RefPrefix}_${6}.bam
-${SAMTOOLS} index T_${hap1RefPrefix}_${6}.bam
+${SAMTOOLS} sort T_${hap1RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m";exit 1; } > T_${hap1RefPrefix}_${6}.bam
+${SAMTOOLS} index T_${hap1RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m";exit 1; }
 
 date | tr '\012' ':'
 echo " Sort, index and convert to T_${hap2RefPrefix}_${6}.bam."
-${SAMTOOLS} sort T_${hap2RefPrefix}_${6}.tmp.sam > T_${hap2RefPrefix}_${6}.bam
-${SAMTOOLS} index T_${hap2RefPrefix}_${6}.bam
+${SAMTOOLS} sort T_${hap2RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m";exit 1; } > T_${hap2RefPrefix}_${6}.bam
+${SAMTOOLS} index T_${hap2RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m";exit 1; }
 
 # Cleanup
 rm [TN]_*_${6}*.sam
@@ -67,13 +67,13 @@ rm [TN]_*_${6}*.sam
 
 date | tr '\012' ':'
 echo " Simulating phased reads from normal sample.."
-${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} ${4} -m ${5} -s 10 -o "N_${hap1RefPrefix}_${6}"
+${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} ${4} -m ${5} -s 10 -o "N_${hap1RefPrefix}_${6}" || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m";exit 1; }
 #${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} -c ${4} -m ${5} -s 10 -o "N_${hap1RefPrefix}_${6}"
 
 # Remove the paired end fastq files, we won't need those.
 rm N_${hap1RefPrefix}_${6}[12].fq
 
-${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "N_${hap2RefPrefix}_${6}"
+${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "N_${hap2RefPrefix}_${6}" || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m";exit 1; }
 #${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} -c ${4} -m ${5} -s 10 -o "N_${hap2RefPrefix}_${6}"
 
 # Remove the paired end fastq files, we won't need those.
@@ -92,13 +92,13 @@ cat N_${hap2RefPrefix}_${6}.sam | sed -e "s/^[^@]/N_X2_&/1" > N_${hap2RefPrefix}
 # Sort, index and convert to (perfectly mapped) phased normal BAMs.
 date | tr '\012' ':'
 echo " Sort, index and convert to N_${hap1RefPrefix}_${6}.bam."
-${SAMTOOLS} sort N_${hap1RefPrefix}_${6}.tmp.sam > N_${hap1RefPrefix}_${6}.bam
-${SAMTOOLS} index N_${hap1RefPrefix}_${6}.bam
+${SAMTOOLS} sort N_${hap1RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m";exit 1; } > N_${hap1RefPrefix}_${6}.bam
+${SAMTOOLS} index N_${hap1RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m";exit 1; }
 
 date | tr '\012' ':'
 echo " Sort, index and convert to N_${hap2RefPrefix}_${6}.bam."
-${SAMTOOLS} sort N_${hap2RefPrefix}_${6}.tmp.sam > N_${hap2RefPrefix}_${6}.bam
-${SAMTOOLS} index N_${hap2RefPrefix}_${6}.bam
+${SAMTOOLS} sort N_${hap2RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m";exit 1; } > N_${hap2RefPrefix}_${6}.bam
+${SAMTOOLS} index N_${hap2RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m";exit 1; }
 
 
 # Cleanup
