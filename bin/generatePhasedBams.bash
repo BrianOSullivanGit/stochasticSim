@@ -18,7 +18,7 @@
 # The path to the set of tools that have been tested is specified in a file
 # tool.path that is located in ..../stochasticSim-x.y/bin.
 if [ -z ${SAMTOOLS+xyz} ]; then SAMTOOLS=`which samtools`; fi
-if [ -z ${READ_SIMULATOR+xyz} ]; then READ_SIMULATOR=`which art_illumina"`; fi
+if [ -z ${READ_SIMULATOR+xyz} ]; then READ_SIMULATOR=`which art_illumina`; fi
 
 hap1RefPrefix=`echo ${1} | sed -e 's/.*\///1' -e 's/\.fa$//1'`
 hap2RefPrefix=`echo ${2} | sed -e 's/.*\///1' -e 's/\.fa$//1'`
