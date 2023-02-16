@@ -22,9 +22,9 @@ VCF_NAME=`echo ${1} | sed -e "s/.*\///1" -e 's/^[TN]_//1' -e 's/\.bam$//1'`
 
 date | tr '\012' ' '
 echo "Adding read groups.."
-${SAMTOOLS} addreplacerg -r ID:HG00110 -r DT:${DT_STRING} -r SM:T_HG00110 ${1} -o ${TUMOUR_WITH_RG}
+${SAMTOOLS} addreplacerg -r ID:HG00110 -r DT:${DT_STRING} -r SM:T_HG00110 ${1} -o ${TUMOUR_WITH_RG} || { echo -e "\n\033[7mSAMTOOLS ADDREPLACERG failed!033[0m";exit 1; } 
 DT_STRING=`date -Iseconds`
-${SAMTOOLS} addreplacerg -r ID:HG00110 -r DT:${DT_STRING} -r SM:N_HG00110 ${2} -o ${NORMAL_WITH_RG}
+${SAMTOOLS} addreplacerg -r ID:HG00110 -r DT:${DT_STRING} -r SM:N_HG00110 ${2} -o ${NORMAL_WITH_RG} || { echo -e "\n\033[7mSAMTOOLS ADDREPLACERG failed!033[0m";exit 1; } 
 
 
 LATEST_MUTECT_JAR="../gatk-4.2.2.0/gatk-package-4.2.2.0-local.jar"
@@ -32,8 +32,8 @@ LATEST_MUTECT_JAR="../gatk-4.2.2.0/gatk-package-4.2.2.0-local.jar"
 ${SAMTOOLS} index ${TUMOUR_WITH_RG}
 ${SAMTOOLS} index ${NORMAL_WITH_RG}
 
-TUMOUR_SAMPLE=`${SAMTOOLS} view -H ${TUMOUR_WITH_RG} | grep -m1 '@RG.*SM:' | sed -e 's/@RG.*SM://1' -e 's/[[:space:]]*$//1'`
-NORMAL_SAMPLE=`${SAMTOOLS} view -H ${NORMAL_WITH_RG} | grep -m1 '@RG.*SM:' | sed -e 's/@RG.*SM://1' -e 's/[[:space:]]*$//1'`
+TUMOUR_SAMPLE=`${SAMTOOLS} view -H ${TUMOUR_WITH_RG} | grep -m1 '@RG.*SM:' | sed -e 's/@RG.*SM://1' -e 's/[[:space:]]*$//1'` || { echo -e "\n\033[7mSAMTOOLS VIEW failed!033[0m";exit 1; } 
+NORMAL_SAMPLE=`${SAMTOOLS} view -H ${NORMAL_WITH_RG} | grep -m1 '@RG.*SM:' | sed -e 's/@RG.*SM://1' -e 's/[[:space:]]*$//1'` || { echo -e "\n\033[7mSAMTOOLS VIEW failed!033[0m";exit 1; } 
 
 # Run mutect.
 java -Xmx16g -jar ${LATEST_MUTECT_JAR} \
@@ -45,14 +45,14 @@ java -Xmx16g -jar ${LATEST_MUTECT_JAR} \
             -normal ${NORMAL_SAMPLE} \
             -panel-of-normals ../1000g_pon.hg38.chr19.vcf.gz \
             -tumor-lod-to-emit 0 \
-            -O ${VCF_NAME}.vcf.gz 
+            -O ${VCF_NAME}.vcf.gz || { echo -e "\n\033[7mMUTECT2 failed!033[0m";exit 1; } 
 
 # Now filter calls (to annotate PASS variants etc).
 java -Xmx16g -jar ${LATEST_MUTECT_JAR} \
       FilterMutectCalls \
       -R ../GRCh38.d1.vd1.chr19.fa \
       -V ${VCF_NAME}.vcf.gz \
-      -O ${VCF_NAME}.filtered.vcf.gz
+      -O ${VCF_NAME}.filtered.vcf.gz || { echo -e "\n\033[7mFILTER MUTECT2 fCALLS ailed!033[0m";exit 1; } 
 
 
 # Now create the map of called somatic mutations with the ground truth.
