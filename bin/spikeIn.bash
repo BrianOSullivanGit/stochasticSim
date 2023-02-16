@@ -38,23 +38,23 @@ hap2PreTumourBamPrefix=`echo ${2} | sed -e 's/.*\///1' -e 's/\.bam$//1'`
 # Spike in these, each set into its corresponding haplotype set of reads.
 date | tr '\012' ':'
 echo " Spike into haplotype 1 ${1}"
-${STOCHASTIC_SPIKE} ${1} ${3} ${5} 434 ${hap1PreTumourBamPrefix}.spike.sam
+${STOCHASTIC_SPIKE} ${1} ${3} ${5} 434 ${hap1PreTumourBamPrefix}.spike.sam || { echo -e "\n\033[7mSPIKE IN hap 1 failed! \033[0m";exit 1; }
 mv truth.vcf ${hap1PreTumourBamPrefix}.truth.vcf
 
 date | tr '\012' ':'
 echo " Spike into haplotype 2 ${2}"
-${STOCHASTIC_SPIKE} ${2} ${4} ${6} 434 ${hap2PreTumourBamPrefix}.spike.sam
+${STOCHASTIC_SPIKE} ${2} ${4} ${6} 434 ${hap2PreTumourBamPrefix}.spike.sam || { echo -e "\n\033[7mSPIKE IN hap 2 failed! \033[0m";exit 1; }
 mv truth.vcf ${hap2PreTumourBamPrefix}.truth.vcf
 
 date | tr '\012' ':'
 echo " Sort, index and convert to ${hap1PreTumourBamPrefix}.spike.bam."
-${SAMTOOLS} sort ${hap1PreTumourBamPrefix}.spike.sam > ${hap1PreTumourBamPrefix}.spike.bam
-${SAMTOOLS} index ${hap1PreTumourBamPrefix}.spike.bam
+${SAMTOOLS} sort ${hap1PreTumourBamPrefix}.spike.sam || { echo -e "\n\033[7mSAMTOOLS SORT hap 1 failed! \033[0m";exit 1; } > ${hap1PreTumourBamPrefix}.spike.bam
+${SAMTOOLS} index ${hap1PreTumourBamPrefix}.spike.bam || { echo -e "\n\033[7mSAMTOOLS INDEX hap 1 failed! \033[0m";exit 1; }
 
 date | tr '\012' ':'
 echo " Sort, index and convert to ${hap2PreTumourBamPrefix}.spike.bam."
-${SAMTOOLS} sort ${hap2PreTumourBamPrefix}.spike.sam > ${hap2PreTumourBamPrefix}.spike.bam
-${SAMTOOLS} index ${hap2PreTumourBamPrefix}.spike.bam
+${SAMTOOLS} sort ${hap2PreTumourBamPrefix}.spike.sam || { echo -e "\n\033[7mSAMTOOLS SORT hap 2 failed! \033[0m";exit 1; } > ${hap2PreTumourBamPrefix}.spike.bam
+${SAMTOOLS} index ${hap2PreTumourBamPrefix}.spike.bam || { echo -e "\n\033[7mSAMTOOLS INDEX hap 2 failed! \033[0m";exit 1; }
 
 # Remove redundant SAMs.
 rm ${hap1PreTumourBamPrefix}.spike.sam ${hap2PreTumourBamPrefix}.spike.sam
