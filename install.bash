@@ -167,7 +167,7 @@ cd ${stochasticSimDirName}/toyExample
 # Unpack the reference and bed file etc. for this toy example.
 tar zxvf GRCh38.d1.vd1.HG00110.chr19.tgz
 # Index it.
-../../bwa/bwa index -a bwtsw GRCh38.d1.vd1.chr19.fa { echo -e "\n\033[7mFailed to inndex genome. Resolve issues before proceeding.\033[0m";exit 11; }
+../../bwa/bwa index -a bwtsw GRCh38.d1.vd1.chr19.fa || { echo -e "\n\033[7mFailed to index GRCh38 chr19 genome. Resolve issues before proceeding.\033[0m";exit 11; }
  
 # Setup caller (Mutect2)
 date | tr '\012' ':'
