@@ -41,44 +41,44 @@ hap2BamPrefix=`echo ${2} | sed -e 's/.*\///1' -e 's/\.bam$//1'`
 # H1 set.
 date | tr '\012' ':'
 echo " Convert first haplotype BAM to fastq's and realign."
-${SAMTOOLS} collate -u -O ${1} | \
-${SAMTOOLS} fastq -1 /tmp/temp${$}_1.fq -2 /tmp/temp${$}_2.fq -0 /dev/null -s /tmp/t${hap1BamPrefix}_S.fq -n
+${SAMTOOLS} collate -u -O ${1} || { echo -e "\n\033[7mSAMTOOLS COLLATE hap 1 failed! \033[0m";exit 1; } | \
+${SAMTOOLS} fastq -1 /tmp/temp${$}_1.fq -2 /tmp/temp${$}_2.fq -0 /dev/null -s /tmp/t${hap1BamPrefix}_S.fq -n || { echo -e "\n\033[7mSAMTOOLS FASTQ hap 1 failed! \033[0m";exit 1; }
 
 date | tr '\012' ':'
 echo " Realigning haplotype 1 using standard reference and convert to BAM."
-${ALIGNER} mem -t ${SNGS_NUM_CORES} -M ${3} /tmp/temp${$}_1.fq  /tmp/temp${$}_2.fq | \
-${SAMTOOLS} sort -@ ${SNGS_NUM_CORES} > ${hap1BamPrefix}.realn.bam
+${ALIGNER} mem -t ${SNGS_NUM_CORES} -M ${3} /tmp/temp${$}_1.fq  /tmp/temp${$}_2.fq || { echo -e "\n\033[7mREALIGN hap 1 failed! \033[0m";exit 1; } | \
+${SAMTOOLS} sort -@ ${SNGS_NUM_CORES} || { echo -e "\n\033[7mSAMTOOLS SORT hap 1 failed! \033[0m";exit 1; } > ${hap1BamPrefix}.realn.bam
 
 # Cleanup
 rm ${hap1BamPrefix}.realn.sam /tmp/temp${$}_1.fq  /tmp/temp${$}_2.fq
 # Index
-${SAMTOOLS} index ${hap1BamPrefix}.realn.bam
+${SAMTOOLS} index ${hap1BamPrefix}.realn.bam || { echo -e "\n\033[7mSAMTOOLS INDEX hap 1 failed! \033[0m";exit 1; }
 
 
 # Now H2.
 date | tr '\012' ':'
 echo " Convert second haplotype BAM to fastq's and realign."
-mktemp temp${$}_1.fq temp${$}_2.fq
+# mktemp temp${$}_1.fq temp${$}_2.fq
 
-${SAMTOOLS} collate -u -O ${2} | \
-${SAMTOOLS} fastq -1 /tmp/temp${$}_1.fq -2 /tmp/temp${$}_2.fq -0 /dev/null -s ${hap2BamPrefix}_S.fq -n
+${SAMTOOLS} collate -u -O ${2} || { echo -e "\n\033[7mSAMTOOLS COLLATE hap 2 failed! \033[0m";exit 1; } | \
+${SAMTOOLS} fastq -1 /tmp/temp${$}_1.fq -2 /tmp/temp${$}_2.fq -0 /dev/null -s ${hap2BamPrefix}_S.fq -n || { echo -e "\n\033[7mSAMTOOLS FASTQ hap 2 failed! \033[0m";exit 1; }
 
 
 date | tr '\012' ':'
 echo " Realigning haplotype 2 using standard reference and convert to BAM."
-${ALIGNER} mem -t ${SNGS_NUM_CORES} -M ${3} /tmp/temp${$}_1.fq  /tmp/temp${$}_2.fq | \
-${SAMTOOLS} sort -@ ${SNGS_NUM_CORES} > ${hap2BamPrefix}.realn.bam
+${ALIGNER} mem -t ${SNGS_NUM_CORES} -M ${3} /tmp/temp${$}_1.fq  /tmp/temp${$}_2.fq || { echo -e "\n\033[7mREALIGN hap 2 failed! \033[0m";exit 1; } | \
+${SAMTOOLS} sort -@ ${SNGS_NUM_CORES} || { echo -e "\n\033[7mSAMTOOLS SORT hap 2 failed! \033[0m";exit 1; }  > ${hap2BamPrefix}.realn.bam
 
 # Cleanup
 rm ${hap2BamPrefix}.realn.sam /tmp/temp${$}_1.fq  /tmp/temp${$}_2.fq
 # Index
-${SAMTOOLS} index ${hap2BamPrefix}.realn.bam
+${SAMTOOLS} index ${hap2BamPrefix}.realn.bam || { echo -e "\n\033[7mSAMTOOLS INDEX hap 2 failed! \033[0m";exit 1; } 
 
 
 date | tr '\012' ':'
 echo " Merge both haplotypes into single BAM (${4}.realn.phased.bam)."
-samtools merge ${4}.realn.phased.bam ${hap1BamPrefix}.realn.bam ${hap2BamPrefix}.realn.bam
+samtools merge ${4}.realn.phased.bam ${hap1BamPrefix}.realn.bam ${hap2BamPrefix}.realn.bam || { echo -e "\n\033[7mSAMTOOLS MERGE failed! \033[0m";exit 1; } 
 
 date | tr '\012' ':'
 echo " Index the merged BAM."
-${SAMTOOLS} index ${4}.realn.phased.bam
+${SAMTOOLS} index ${4}.realn.phased.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m";exit 1; }
