@@ -65,7 +65,7 @@ cat ./tmp.$$.${flankingLength}bpFlanking.bed|egrep '^chrY[[:space:]]' | sort -k2
 
 
 # Re-merge overlapping ranges.
-${BEDTOOLS} merge -i tmp.$$.bed | gzip > ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz || { echo -e "\n\033[7mBEDTOOLS merge failed! \033[0m";exit 1; }
+${BEDTOOLS} merge -i tmp.$$.bed || { echo -e "\n\033[7mBEDTOOLS merge failed! \033[0m";exit 1; } | gzip > ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz
 
 # Clean as you go..
 rm tmp.$$.bed tmp.$$.${flankingLength}bpFlanking.bed ${bedPrefix}.sorted.bed
@@ -81,11 +81,11 @@ date | tr '\012' ':'
 echo ' Create personalised donor genome. Reference X1 (haplotype 1) X1_<ID prefix>.fa.'
 if [ "${2}" = "F" -o "${2}" = "f" ]
 then
-    rm X1_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "0|1" chrY > X1_${1}.fa;mv liftover.txt liftover_X1_${1}.txt || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 1 failed! \033[0m";exit 1; }
+    rm X1_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "0|1" chrY || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 1 failed! \033[0m";exit 1; } > X1_${1}.fa;mv liftover.txt liftover_X1_${1}.txt
 else
     # TODO!!!! Male, don't skip Y!!!!!(or skip Y here but not below????)
     echo "Not fully implemented yet!!!!!!!"
-    rm X1_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "0|1" > X1_${1}.fa;mv liftover.txt liftover_X1_${1}.txt || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 1 failed! \033[0m";exit 1; }
+    rm X1_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "0|1"  || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 1 failed! \033[0m";exit 1; } > X1_${1}.fa;mv liftover.txt liftover_X1_${1}.txt
 fi
 
 
@@ -96,10 +96,10 @@ echo ' Create personalised donor genome. Reference X2 (haplotype 2) X2_<ID prefi
 
 if [ "${2}" = "F" -o "${2}" = "f" ]
 then
-    rm X2_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "1|0" chrY > X2_${1}.fa;mv liftover.txt liftover_X2_${1}.txt || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 2 failed! \033[0m";exit 1; }
+    rm X2_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "1|0" chrY || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 2 failed! \033[0m";exit 1; } > X2_${1}.fa;mv liftover.txt liftover_X2_${1}.txt
 else
     echo "Not fully implemented yet!!!!!!!"
-    rm X2_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "1|0" > X2_${1}.fa;mv liftover.txt liftover_X2_${1}.txt || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 2 failed! \033[0m";exit 1; }
+    rm X2_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "1|0"  || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 2 failed! \033[0m";exit 1; } > X2_${1}.fa;mv liftover.txt liftover_X2_${1}.txt
 fi
 
 
