@@ -44,7 +44,7 @@ cat ${5} |egrep '^chrX[[:space:]]' | sort -k2,2n -k3,3n|cut -f1-3 >> ${bedPrefix
 cat ${5} |egrep '^chrY[[:space:]]' | sort -k2,2n -k3,3n|cut -f1-3 >> ${bedPrefix}.sorted.bed
 
 # Merge overlapping ranges.
-${BEDTOOLS} merge -i ${bedPrefix}.sorted.bed  > tmp.$$.bed
+${BEDTOOLS} merge -i ${bedPrefix}.sorted.bed || { echo -e "\n\033[7mBEDTOOLS merge failed! \033[0m";exit 1; } > tmp.$$.bed
 
 # Allow for off-target capture in flanking regions.
 # TODO!!! Make sure the flanking region arg was set before doing this...
