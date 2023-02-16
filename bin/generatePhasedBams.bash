@@ -41,11 +41,11 @@ ${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap2Ref
 rm T_${hap2RefPrefix}_${6}[12].fq
 
 date | tr '\012' ':'
-echo " Prefix tumour reads with haplotype identifier (haplotype 1 / T_X1_HG00110)."
+echo " Prefix QNAME in tumour reads with haplotype identifier (haplotype 1 / T_X1_HG00110)."
 cat T_${hap1RefPrefix}_${6}.sam | sed -e "s/^[^@]/T_X1_&/1" > T_${hap1RefPrefix}_${6}.tmp.sam
 
 date | tr '\012' ':'
-echo " Prefix tumour reads with haplotype identifier (haplotype 2 / T_X2_HG00110)."
+echo " Prefix QNAME in tumour reads with haplotype identifier (haplotype 2 / T_X2_HG00110)."
 cat T_${hap2RefPrefix}_${6}.sam | sed -e "s/^[^@]/T_X2_&/1" > T_${hap2RefPrefix}_${6}.tmp.sam
 
 
@@ -81,11 +81,11 @@ rm N_${hap2RefPrefix}_${6}[12].fq
 
 
 date | tr '\012' ':'
-echo " Prefix normal reads with haplotype identifier (haplotype 1 / N_X1_HG00110)."
+echo " Prefix QNAME in normal reads with haplotype identifier (haplotype 1 / N_X1_HG00110)."
 cat N_${hap1RefPrefix}_${6}.sam | sed -e "s/^[^@]/N_X1_&/1" > N_${hap1RefPrefix}_${6}.tmp.sam
 
 date | tr '\012' ':'
-echo " Prefix normal reads with haplotype identifier (haplotype 2 / N_X2_HG00110)."
+echo " Prefix QNAME in normal reads with haplotype identifier (haplotype 2 / N_X2_HG00110)."
 cat N_${hap2RefPrefix}_${6}.sam | sed -e "s/^[^@]/N_X2_&/1" > N_${hap2RefPrefix}_${6}.tmp.sam
 
 
