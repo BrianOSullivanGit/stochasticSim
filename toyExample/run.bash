@@ -12,7 +12,7 @@ HG00110 together with other files for use later in the simulation.\n\n"
 date | tr '\012' ':'
 echo -e ">>>>>> Start \033[1m../bin/createPersonalisedMaskedTarget.bash HG00110 \\ \n                                                                                     F \\ \n                                                                                     GRCh38.d1.vd1.chr19.fa \\ \n                                                                                     HG00110.chr19.vcf \\ \n                                                                                     ${2}\033[0m"
 
-../bin/createPersonalisedMaskedTarget.bash HG00110 F GRCh38.d1.vd1.chr19.fa HG00110.chr19.vcf ${2}
+../bin/createPersonalisedMaskedTarget.bash HG00110 F GRCh38.d1.vd1.chr19.fa HG00110.chr19.vcf ${2} || { echo -e "\n\033[7mCREATE PERSONALISED MASKED TARGET failed! \033[0m" 1>&2;exit 1; }
 
 date | tr '\012' ':'
 echo -e ">>>>>> Done. \033[1m../bin/createPersonalisedMaskedTarget.bash\033[0m"
@@ -22,8 +22,8 @@ printf "Cleanup liftover that are used to map coordinates from standard to perso
 date | tr '\012' ':'
 echo -e ">>>>>> Start \033[1mCompress liftover files\033[0m" 
 
-../bin/condenseLift liftover_X1_HG00110.txt > liftover_X1_HG00110.condense.txt
-../bin/condenseLift liftover_X2_HG00110.txt > liftover_X2_HG00110.condense.txt
+../bin/condenseLift liftover_X1_HG00110.txt > liftover_X1_HG00110.condense.txt || { echo -e "\n\033[7mCONDENSE LIFTOVER FILE failed! \033[0m" 1>&2;exit 1; }
+../bin/condenseLift liftover_X2_HG00110.txt > liftover_X2_HG00110.condense.txt || { echo -e "\n\033[7mCONDENSE LIFTOVER FILE failed! \033[0m" 1>&2;exit 1; }
 rm liftover_X1_HG00110.txt liftover_X2_HG00110.txt
 
 date | tr '\012' ':'
@@ -62,7 +62,7 @@ set of BAMs at the required depth of coverage.\n\n"
 date | tr '\012' ':'
 echo -e ">>>>>> Start \033[1m../bin/generatePhasedBams.bash X1_HG00110.${target}.fa \\ \n                                                                         X2_HG00110.${target}.fa \\ \n                                                                         76 \\ \n                                                                         \"-f ${hapDepth}\" \\ \n                                                                         180 \\ \n                                                                         ${hapDepth}x_76bp\033[0m"
 
-../bin/generatePhasedBams.bash X1_HG00110.${target}.fa X2_HG00110.${target}.fa 76 "-f ${hapDepth}" 180 "${hapDepth}x_76bp"
+../bin/generatePhasedBams.bash X1_HG00110.${target}.fa X2_HG00110.${target}.fa 76 "-f ${hapDepth}" 180 "${hapDepth}x_76bp" || { echo -e "\n\033[7mGENERATE PHASED BAMS failed! \033[0m" 1>&2;exit 1; }
 
 date | tr '\012' ':'
 echo -e ">>>>>> Done. \033[1m../bin/generatePhasedBams.bash\033[0m"
@@ -70,7 +70,7 @@ echo -e ">>>>>> Done. \033[1m../bin/generatePhasedBams.bash\033[0m"
 printf "\nSpike-in the required burden to the phased pre-tumour BAM files.\n\n"
 date | tr '\012' ':'
 echo -e ">>>>>> Start \033[1m../bin/spikeIn.bash T_X1_HG00110.${target}_${hapDepth}x_76bp.bam \\ \n                                                              T_X2_HG00110.${target}_${hapDepth}x_76bp.bam \\ \n                                                              X1_HG00110.${target}.fa \\ \n                                                              X2_HG00110.${target}.fa \\ \n                                                              ${target}.h1.854mutMB.spike \\ \n                                                              ${target}.h2.854mutMB.spike\033[0m"
-../bin/spikeIn.bash T_X1_HG00110.${target}_${hapDepth}x_76bp.bam T_X2_HG00110.${target}_${hapDepth}x_76bp.bam X1_HG00110.${target}.fa X2_HG00110.${target}.fa ${target}.h1.854mutMB.spike  ${target}.h2.854mutMB.spike
+../bin/spikeIn.bash T_X1_HG00110.${target}_${hapDepth}x_76bp.bam T_X2_HG00110.${target}_${hapDepth}x_76bp.bam X1_HG00110.${target}.fa X2_HG00110.${target}.fa ${target}.h1.854mutMB.spike  ${target}.h2.854mutMB.spike || { echo -e "\n\033[7mSPIKE-IN failed! \033[0m" 1>&2;exit 1; }
 date | tr '\012' ':'
 echo -e ">>>>>> Done, \033[1mspike-in.\033[0m"
 
@@ -79,13 +79,13 @@ create a tumour and normal pair for somatic variant calling.\n\n"
 
 date | tr '\012' ':'
 echo -e ">>>>>> Start \033[1m../bin/realignAndMerge.bash T_X1_HG00110.${target}_${hapDepth}x_76bp.spike.bam  \\ \n                                                                      T_X2_HG00110.${target}_${hapDepth}x_76bp.spike.bam \\ \n                                                                      GRCh38.d1.vd1.chr19.fa \\ \n                                                                      T_HG00110.${target}_${1}x_76bp\033[0m"
-../bin/realignAndMerge.bash T_X1_HG00110.${target}_${hapDepth}x_76bp.spike.bam  T_X2_HG00110.${target}_${hapDepth}x_76bp.spike.bam GRCh38.d1.vd1.chr19.fa T_HG00110.${target}_${1}x_76bp
+../bin/realignAndMerge.bash T_X1_HG00110.${target}_${hapDepth}x_76bp.spike.bam  T_X2_HG00110.${target}_${hapDepth}x_76bp.spike.bam GRCh38.d1.vd1.chr19.fa T_HG00110.${target}_${1}x_76bp || { echo -e "\n\033[7mREALIGN AND MERGE, TUMOUR failed! \033[0m" 1>&2;exit 1; }
 date | tr '\012' ':'
 echo -e ">>>>>> Done, \033[1mrealign & merge, tumour BAMs.\033[0m"
 
 date | tr '\012' ':'
 echo -e ">>>>>> Start \033[1m../bin/realignAndMerge.bash N_X1_HG00110.${target}_${hapDepth}x_76bp.bam  \\ \n                                                                      N_X2_HG00110.${target}_${hapDepth}x_76bp.bam \\ \n                                                                      GRCh38.d1.vd1.chr19.fa \\ \n                                                                      N_HG00110.${target}_${1}x_76bp\033[0m"
-../bin/realignAndMerge.bash N_X1_HG00110.${target}_${hapDepth}x_76bp.bam  N_X2_HG00110.${target}_${hapDepth}x_76bp.bam GRCh38.d1.vd1.chr19.fa N_HG00110.${target}_${1}x_76bp
+../bin/realignAndMerge.bash N_X1_HG00110.${target}_${hapDepth}x_76bp.bam  N_X2_HG00110.${target}_${hapDepth}x_76bp.bam GRCh38.d1.vd1.chr19.fa N_HG00110.${target}_${1}x_76bp || { echo -e "\n\033[7mREALIGN AND MERGE, NORMAL failed! \033[0m" 1>&2;exit 1; }
 date | tr '\012' ':'
 echo -e ">>>>>> Done, \033[1mrealign & merge, normal BAMs.\033[0m"
 
@@ -94,7 +94,7 @@ printf "\nPerform somatic variant calling (Mutect2). Map the output against the 
 date | tr '\012' ':'
 echo -e ">>>>>> Start \033[1mSomatic variant caller and map its output to the ground truth.\033[0m"
 cd MUTECT
-./run.bash ../T_HG00110.${target}_${1}x_76bp.realn.phased.bam ../N_HG00110.${target}_${1}x_76bp.realn.phased.bam ../T_X1_HG00110.${target}_${hapDepth}x_76bp.truth.vcf ../T_X2_HG00110.${target}_${hapDepth}x_76bp.truth.vcf 
+./run.bash ../T_HG00110.${target}_${1}x_76bp.realn.phased.bam ../N_HG00110.${target}_${1}x_76bp.realn.phased.bam ../T_X1_HG00110.${target}_${hapDepth}x_76bp.truth.vcf ../T_X2_HG00110.${target}_${hapDepth}x_76bp.truth.vcf || { echo -e "\n\033[7mVARIANT CALLING / GROUND TRUTH MAP failed! \033[0m" 1>&2;exit 1; }
 date | tr '\012' ':'
 echo -e ">>>>>> Done, \033[1msomatic variant caller and ground truth map.\033[0m"
 echo
