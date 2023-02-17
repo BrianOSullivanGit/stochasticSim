@@ -1,9 +1,10 @@
+#!/bin/bash
 
-# prepGtMap.bash /data/bosullivan/SIM_PIPELINE/100x/MUTECT/HG00110.coding_exons_hg38_100x_76bp.realn.phased.filtered.vcf.gz \
-#              /data/bosullivan/1000GENOMES/TEST3/liftover_X1_HG00110.condense.txt \
-#              /data/bosullivan/1000GENOMES/TEST3/liftover_X2_HG00110.condense.txt \
-#              /data/bosullivan/SIM_PIPELINE/100x/T_X1_HG00110.coding_exons_hg38_100x_76bp.truth.vcf \
-#              /data/bosullivan/SIM_PIPELINE/100x/T_X2_HG00110.coding_exons_hg38_100x_76bp.truth.vcf
+# prepGtMap.bash /common/user1/SIM_PIPELINE/100x/MUTECT/HG00110.coding_exons_hg38_100x_76bp.realn.phased.filtered.vcf.gz \
+#                /common/user1/1000GENOMES/TEST3/liftover_X1_HG00110.condense.txt \
+#                /common/user1/1000GENOMES/TEST3/liftover_X2_HG00110.condense.txt \
+#                /common/user1/SIM_PIPELINE/100x/T_X1_HG00110.coding_exons_hg38_100x_76bp.truth.vcf \
+#                /common/user1/SIM_PIPELINE/100x/T_X2_HG00110.coding_exons_hg38_100x_76bp.truth.vcf
 #
 
 
@@ -35,7 +36,7 @@ echo "Lifting over target loci for haplotype 1, using ${2}"
 source tmp.cmds.$$ > targetsHap1.loci
 
 # Cross check target loci against the GT VCF.
-${GTMAPPER} ${4} targetsHap1.loci | awk '{ gsub(".*AF=","",$8);if($4!=".") print $1":"$2"\t"$4">"$5"\t"$7"\t"$8; else print $1":"$2"\t.\t.\t." }' > gtMapper.hap1
+(${GTMAPPER} ${4} targetsHap1.loci || { echo -e "\n\033[7mGTMAPPER failed with haplotype 1 ! \033[0m" 1>&2;exit 1; }) | awk '{ gsub(".*AF=","",$8);if($4!=".") print $1":"$2"\t"$4">"$5"\t"$7"\t"$8; else print $1":"$2"\t.\t.\t." }' > gtMapper.hap1
 
 
 # Repeat for Haplotype 2.
@@ -50,7 +51,7 @@ echo "Lifting over target loci for haplotype 2, using ${3}"
 source tmp.cmds.$$ > targetsHap2.loci
 
 # Cross check target loci against the GT VCF.
-${GTMAPPER} ${5} targetsHap2.loci | awk '{ gsub(".*AF=","",$8);if($4!=".") print $1":"$2"\t"$4">"$5"\t"$7"\t"$8; else print $1":"$2"\t.\t.\t." }' > gtMapper.hap2
+(${GTMAPPER} ${5} targetsHap2.loci || { echo -e "\n\033[7mGTMAPPER failed with haplotype 2 ! \033[0m" 1>&2;exit 1; }) | awk '{ gsub(".*AF=","",$8);if($4!=".") print $1":"$2"\t"$4">"$5"\t"$7"\t"$8; else print $1":"$2"\t.\t.\t." }' > gtMapper.hap2
 
 # Get the filter fields and caller inferred allele frequencies from the VCF for all SBSs (again in ref. coordinate order).
 # NB: This assumes the tumour format attributes are located in field 11 of the VCF record!!!
@@ -145,8 +146,10 @@ value=`cut -f2 delme.$$ | tr '\012' ',' | sed -e 's/^/c(/1' -e 's/,$/)/1'`
 # Get output pdf name..
 outputpdf=`echo ${1} | sed -e 's/.*\///1' -e 's/\.vcf.*/.fn.pdf/1'`
 
+rscriptPath=`command -v Rscript` || { rscriptPath="/usr/bin/Rscript"; echo -e "\n\033[7mRSCRIPT not found. False Neg. plot will not run on this machine. Consider installing R ! \033[0m" 1>&2; }
 
-printf '#!/usr/bin/Rscript
+
+printf '#!%s
 library(ggplot2)
 library(ggrepel)
 library(vctrs)
@@ -218,11 +221,11 @@ ggplot(df2, aes(x = "" , y = value, fill = tmpFct_inorder(group))) +
                      size = 4.5, nudge_x = 1, show.legend = FALSE) +
     guides(fill = guide_legend(title = "Filtered false negatives")) +
     theme_void()
-dev.off()\n' "$value" "$filtr" "${outputpdf}"> plotGtPieChart.R
+dev.off()\n' "$rscriptPath" "$value" "$filtr" "${outputpdf}"> plotGtPieChart.R
 
 # Remove temp files
 rm targetsHap1.loci gtMapper.hap1 tmp.cmds.$$ targetsHap2.loci gtMapper.hap2 targets.filters.ref fp.$$.list delme.$$
 
 # Create pie chart output.
 chmod u+x plotGtPieChart.R
-./plotGtPieChart.R
+command -v Rscript > /dev/null && ./plotGtPieChart.R
