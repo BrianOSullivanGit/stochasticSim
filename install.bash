@@ -172,7 +172,7 @@ tar zxvf GRCh38.d1.vd1.HG00110.chr19.tgz
 # Setup caller (Mutect2)
 date | tr '\012' ':'
 echo " Download GATK 4.2.2.0 jar."
-wget--no-verbose https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip || { echo -e "\n\033[7mGATK JAR download failed. Resolve issues before proceeding.\033[0m";exit 12; } 
+wget --no-verbose https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip || { echo -e "\n\033[7mGATK JAR download failed. Resolve issues before proceeding.\033[0m";exit 12; } 
 unzip gatk-4.2.2.0.zip
 rm gatk-4.2.2.0.zip
 cd ../../
