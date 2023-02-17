@@ -52,13 +52,13 @@ cat T_${hap2RefPrefix}_${6}.sam | sed -e "s/^[^@]/T_X2_&/1" > T_${hap2RefPrefix}
 # Sort, index and convert to (perfectly mapped) phased pre-tumour BAMs.
 date | tr '\012' ':'
 echo " Sort, index and convert to T_${hap1RefPrefix}_${6}.bam."
-${SAMTOOLS} sort T_${hap1RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m";exit 1; } > T_${hap1RefPrefix}_${6}.bam
-${SAMTOOLS} index T_${hap1RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m";exit 1; }
+(${SAMTOOLS} sort T_${hap1RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m" 1>&2;exit 1; }) > T_${hap1RefPrefix}_${6}.bam
+${SAMTOOLS} index T_${hap1RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m" 1>&2;exit 1; }
 
 date | tr '\012' ':'
 echo " Sort, index and convert to T_${hap2RefPrefix}_${6}.bam."
-${SAMTOOLS} sort T_${hap2RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m";exit 1; } > T_${hap2RefPrefix}_${6}.bam
-${SAMTOOLS} index T_${hap2RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m";exit 1; }
+(${SAMTOOLS} sort T_${hap2RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m" 1>&2;exit 1; }) > T_${hap2RefPrefix}_${6}.bam
+${SAMTOOLS} index T_${hap2RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m" 1>&2;exit 1; }
 
 # Cleanup
 rm [TN]_*_${6}*.sam
@@ -92,13 +92,13 @@ cat N_${hap2RefPrefix}_${6}.sam | sed -e "s/^[^@]/N_X2_&/1" > N_${hap2RefPrefix}
 # Sort, index and convert to (perfectly mapped) phased normal BAMs.
 date | tr '\012' ':'
 echo " Sort, index and convert to N_${hap1RefPrefix}_${6}.bam."
-${SAMTOOLS} sort N_${hap1RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m";exit 1; } > N_${hap1RefPrefix}_${6}.bam
-${SAMTOOLS} index N_${hap1RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m";exit 1; }
+(${SAMTOOLS} sort N_${hap1RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m" 1>&2;exit 1; }) > N_${hap1RefPrefix}_${6}.bam
+${SAMTOOLS} index N_${hap1RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m"  1>&2;exit 1; }
 
 date | tr '\012' ':'
 echo " Sort, index and convert to N_${hap2RefPrefix}_${6}.bam."
-${SAMTOOLS} sort N_${hap2RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m";exit 1; } > N_${hap2RefPrefix}_${6}.bam
-${SAMTOOLS} index N_${hap2RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m";exit 1; }
+(${SAMTOOLS} sort N_${hap2RefPrefix}_${6}.tmp.sam || { echo -e "\n\033[7mSAMTOOLS SORT failed! \033[0m"  1>&2;exit 1; }) > N_${hap2RefPrefix}_${6}.bam
+${SAMTOOLS} index N_${hap2RefPrefix}_${6}.bam || { echo -e "\n\033[7mSAMTOOLS INDEX failed! \033[0m"  1>&2;exit 1; }
 
 
 # Cleanup
