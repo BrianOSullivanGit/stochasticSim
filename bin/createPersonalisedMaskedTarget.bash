@@ -102,8 +102,6 @@ else
     echo "Not fully implemented yet!!!!!!!"
     rm X2_${1}.fa.fai 2>/dev/null; (${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "1|0"  || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 2 failed! \033[0m" 1>&2;exit 1; }) > X2_${1}.fa;mv liftover.txt liftover_X2_${1}.txt
 fi
-#URHERE
-exit1
 
 # Create new target BEDs (X1 set & X2 set) to match personalised diploid genome.
 date | tr '\012' ':'
