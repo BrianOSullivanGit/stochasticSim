@@ -51,20 +51,19 @@ If you run into an issue with "python not found" when building bedtools on ubunt
 ## Installation
 
 Before running this script, run the following commands.
-Make a directory into which the simulation framework and the set of tools on which it depends will be installed. Enter that directory
+Make a directory into which the set of tools which make up the simulation framework will be installed. Enter that directory
 ```
 cd <your download target directory>
 mkdir stochasticSimFramework
 cd stochasticSimFramework
 ```
 
-Now download and unpack the simulation framework, either latest release or main branch from gitHub, for example using main,
+Now download and unpack the stochasticSim repository, either latest release or main branch from gitHub. For example using main,
 ```
 unzip <download path>/stochasticSim-main.zip
 ```
 
-Enter the `stochasticSim` directory. Look at the installation script to find out what it will install.
-Run the install script, checking for any errors in the output and if required rectify any issues that may have occurred during installation.
+Enter the `stochasticSim` directory. Run the install script, checking for any errors in the output and if required rectify any issues that may have occurred during installation.
 ```
 cd stochasticSim
 more ./install.bash
@@ -73,7 +72,7 @@ more ./install.bash
 
 ## Getting started
 Once the install has completed successfully you can test it out on the toy example included.
-First source the 'tool.path' file to ensure the simulation uses
+First source the `tool.path` file to ensure the simulation uses
 the required versions of associated software tools.
 ```
 source <install path>/stochasticSimFramework/stochasticSim-main/bin/tool.path
@@ -89,7 +88,7 @@ Along with the variant caller output, this directory will contain the following 
 
 | Filename | Description |
 | --- | --- |
-| gtMapper.hap.ref | A tab seperated table mapping all entries in the caller filtered VCF output to their ground truth values in each haplotype. |
-| plotGtPieChart.R/pdf | Source and associated pdf output to plot a pie chart of all caller filtered false negatives. |
-| summary.txt | An overall breakdown of where caller false positives/negatives occurred in this simulation and why. |
+| `gtMapper.hap.ref` | A tab seperated table mapping all entries in the caller filtered VCF output to their ground truth values in each haplotype. |
+| `plotGtPieChart.R/pdf` | Source and associated pdf output to plot a pie chart of all caller filtered false negatives. |
+| `summary.txt` | An overall breakdown of where caller false positives/negatives occurred in this simulation and why. |
 
