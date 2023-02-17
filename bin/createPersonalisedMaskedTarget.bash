@@ -43,8 +43,9 @@ cat ${5} |egrep '^chr[1-9][[:space:]]|^chr[1-2][0-9][[:space:]]' | sort -k1.4,1.
 cat ${5} |egrep '^chrX[[:space:]]' | sort -k2,2n -k3,3n|cut -f1-3 >> ${bedPrefix}.sorted.bed
 cat ${5} |egrep '^chrY[[:space:]]' | sort -k2,2n -k3,3n|cut -f1-3 >> ${bedPrefix}.sorted.bed
 
+
 # Merge overlapping ranges.
-${BEDTOOLS} merge -i ${bedPrefix}.sorted.bed || { echo -e "\n\033[7mBEDTOOLS merge failed! \033[0m";exit 1; } > tmp.$$.bed
+(${BEDTOOLS} merge -i ${bedPrefix}.sorted.bed || { echo -e "\n\033[7mBEDTOOLS merge failed! \033[0m" 1>&2;exit 1; }) > tmp.$$.bed
 
 # Allow for off-target capture in flanking regions.
 # TODO!!! Make sure the flanking region arg was set before doing this...
@@ -65,7 +66,7 @@ cat ./tmp.$$.${flankingLength}bpFlanking.bed|egrep '^chrY[[:space:]]' | sort -k2
 
 
 # Re-merge overlapping ranges.
-${BEDTOOLS} merge -i tmp.$$.bed || { echo -e "\n\033[7mBEDTOOLS merge failed! \033[0m";exit 1; } | gzip > ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz
+(${BEDTOOLS} merge -i tmp.$$.bed || { echo -e "\n\033[7mBEDTOOLS merge failed! \033[0m" 1>&2;exit 1; }) | gzip > ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz
 
 # Clean as you go..
 rm tmp.$$.bed tmp.$$.${flankingLength}bpFlanking.bed ${bedPrefix}.sorted.bed
@@ -81,11 +82,11 @@ date | tr '\012' ':'
 echo ' Create personalised donor genome. Reference X1 (haplotype 1) X1_<ID prefix>.fa.'
 if [ "${2}" = "F" -o "${2}" = "f" ]
 then
-    rm X1_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "0|1" chrY || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 1 failed! \033[0m";exit 1; } > X1_${1}.fa;mv liftover.txt liftover_X1_${1}.txt
+    rm X1_${1}.fa.fai 2>/dev/null; (${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "0|1" chrY || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 1 failed! \033[0m" 1>&2;exit 1; }) > X1_${1}.fa;mv liftover.txt liftover_X1_${1}.txt
 else
     # TODO!!!! Male, don't skip Y!!!!!(or skip Y here but not below????)
     echo "Not fully implemented yet!!!!!!!"
-    rm X1_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "0|1"  || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 1 failed! \033[0m";exit 1; } > X1_${1}.fa;mv liftover.txt liftover_X1_${1}.txt
+    rm X1_${1}.fa.fai 2>/dev/null; (${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "0|1"  || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 1 failed! \033[0m" 1>&2;exit 1; }) > X1_${1}.fa;mv liftover.txt liftover_X1_${1}.txt
 fi
 
 
@@ -96,24 +97,25 @@ echo ' Create personalised donor genome. Reference X2 (haplotype 2) X2_<ID prefi
 
 if [ "${2}" = "F" -o "${2}" = "f" ]
 then
-    rm X2_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "1|0" chrY || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 2 failed! \033[0m";exit 1; } > X2_${1}.fa;mv liftover.txt liftover_X2_${1}.txt
+    rm X2_${1}.fa.fai 2>/dev/null; (${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "1|0" chrY || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 2 failed! \033[0m" 1>&2;exit 1; }) > X2_${1}.fa;mv liftover.txt liftover_X2_${1}.txt
 else
     echo "Not fully implemented yet!!!!!!!"
-    rm X2_${1}.fa.fai 2>/dev/null; ${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "1|0"  || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 2 failed! \033[0m";exit 1; } > X2_${1}.fa;mv liftover.txt liftover_X2_${1}.txt
+    rm X2_${1}.fa.fai 2>/dev/null; (${CREATEDONORGENOME} ${refPrefix}.chr1-22XY.fa ${4} "1|0"  || { echo -e "\n\033[7mCREATE DONOR GENOME hap. 2 failed! \033[0m" 1>&2;exit 1; }) > X2_${1}.fa;mv liftover.txt liftover_X2_${1}.txt
 fi
-
+#URHERE
+exit1
 
 # Create new target BEDs (X1 set & X2 set) to match personalised diploid genome.
 date | tr '\012' ':'
 echo ' Liftover target BED to align with personalised donor genome.'
 if [ "${2}" = "F" -o "${2}" = "f" ]
 then
-    ${LIFTOVER}  liftover_X1_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) chrY || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;exit 1; } | gzip > X1_${1}_${bedPrefix}.merged.bed.gz
-    ${LIFTOVER}  liftover_X2_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) chrY || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;exit 1; } | gzip > X2_${1}_${bedPrefix}.merged.bed.gz
+    (${LIFTOVER}  liftover_X1_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) chrY || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;exit 1; }) | gzip > X1_${1}_${bedPrefix}.merged.bed.gz
+    (${LIFTOVER}  liftover_X2_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) chrY || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;exit 1; }) | gzip > X2_${1}_${bedPrefix}.merged.bed.gz
 else
     echo "Not fully implemented yet!!!!!!!"
-    ${LIFTOVER}  liftover_X1_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;exit 1; } | gzip > X1_${1}_${bedPrefix}.merged.bed.gz
-    ${LIFTOVER}  liftover_X2_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;exit 1; } | gzip > X2_${1}_${bedPrefix}.merged.bed.gz
+    (${LIFTOVER}  liftover_X1_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;exit 1; }) | gzip > X1_${1}_${bedPrefix}.merged.bed.gz
+    (${LIFTOVER}  liftover_X2_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;exit 1; }) | gzip > X2_${1}_${bedPrefix}.merged.bed.gz
 fi
 
 
