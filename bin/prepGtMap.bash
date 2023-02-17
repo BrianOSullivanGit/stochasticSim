@@ -38,7 +38,6 @@ source tmp.cmds.$$ > targetsHap1.loci
 # Cross check target loci against the GT VCF.
 (${GTMAPPER} ${4} targetsHap1.loci || { echo -e "\n\033[7mGTMAPPER failed with haplotype 1 ! \033[0m" 1>&2;exit 1; }) | awk '{ gsub(".*AF=","",$8);if($4!=".") print $1":"$2"\t"$4">"$5"\t"$7"\t"$8; else print $1":"$2"\t.\t.\t." }' > gtMapper.hap1
 
-
 # Repeat for Haplotype 2.
 
 # Find target loci (loci of interest in the VCF for which we want fo pull out the ground truth) in haplotype 2.
@@ -146,7 +145,7 @@ value=`cut -f2 delme.$$ | tr '\012' ',' | sed -e 's/^/c(/1' -e 's/,$/)/1'`
 # Get output pdf name..
 outputpdf=`echo ${1} | sed -e 's/.*\///1' -e 's/\.vcf.*/.fn.pdf/1'`
 
-rscriptPath=`command -v Rscript` || { rscriptPath="/usr/bin/Rscript"; echo -e "\n\033[7mRSCRIPT not found. False Neg. plot will not run on this machine. Consider installing R ! \033[0m" 1>&2; }
+rscriptPath=`command -v Rscript` || { rscriptPath="/usr/bin/Rscript"; echo -e "\n\033[7mWARNING: RSCRIPT not found. False Neg. plot will not run on this machine. Consider installing R ! \033[0m" 1>&2; }
 
 
 printf '#!%s
@@ -229,3 +228,4 @@ rm targetsHap1.loci gtMapper.hap1 tmp.cmds.$$ targetsHap2.loci gtMapper.hap2 tar
 # Create pie chart output.
 chmod u+x plotGtPieChart.R
 command -v Rscript > /dev/null && ./plotGtPieChart.R
+exit 0
