@@ -11,41 +11,24 @@ Contact BrianOSullivan@yahoo.com with questions.
 
 ## System requirements
 
-This simulation framework runs on a 64bit, Mac OS X or GNU/Linux.
-If this does not cover your system it will not work.
-If you need a version for your system let me know (BrianOSullivan@yahoo.com).
-If you want to run Mutect2 as your somatic caller (as in toyExample included)
-you will also need Java 8 / JRE or SDK 1.8 installed (check your version with "java -version").
-The "prepGtMap.bash" script included which plots the contribution of each GATK filter
-to the number of false negatives in the output VCF also requires R (script, /usr/bin/Rscript)
-together with libraries ggplot2, ggrepel, vctrs and forcats.
+This simulation framework runs on a 64bit, Mac OS X or GNU/Linux. If this does not cover your system it will not work. If you need a version for a different platform let me know (BrianOSullivan@yahoo.com). If you want to run Mutect2 as your somatic caller (as in toyExample included) you will also need Java 8 / JRE or SDK 1.8 installed (check your version with "java -version"). The "prepGtMap.bash'' script included which plots the contribution of each GATK filter to the number of false negatives in the VCF output also requires R (script, /usr/bin/Rscript) together with libraries ggplot2, ggrepel, vctrs and forcats (see https://cran.r-project.org if you do not already have R installed).
 
-The total disc space taken up by the framework, once all associated tools
-(samtools, bwa etc.) are installed locally and the toy example simulation run
-is about 1.7G. Approximately 0.7G of this is taken up by BAM files created during simulation.
-These files may be deleted once the somatic variant caller has run
-(unless you need to look into alignment artefacts/issues in caller output).
+The total disc space taken up by the framework, once all associated tools (samtools, bwa etc.) are installed locally and the toy example simulation run is about 1.7G. Approximately 0.7G of this is taken up by BAM files created during simulation. These files may be deleted once the somatic variant caller has run (unless you need to look into alignment artefacts/issues in caller output, in that case you will need them).
 
-This install builds the following publically available tools for use with this framework.
+This install also builds the following publically available tools for use with this framework.
 
-* bwa 0.7.17.
-* samtools 1.13
-* bedtools 2.29.2
+    bwa >0.7.17.
+    samtools 1.13
+    bedtools 2.29.2
 
-They are installed locally, in the same directory in which stochasticSim was cloned.
-They will not modify your path or cause any conflict with any previous installation of
-these tools you may have on your system. You may if you wish use other versions of these
-tools if you have them installed. They will probably work, however as I have not tested it,
-I can not guarantee it. Links to all scripts and binaries used in this simulation framework
-are included under the top level bin directory (stochasticSimFramework/bin).
-You can copy them into another directory in your path and run them from there
-if you prefer. The install script uses curl to download these dependancies.
-You must have curl installed on your system of the script will not work (ie., apt install curl).
+They are installed locally, in the same directory in which stochasticSim was cloned and neither the install or simulation process require root access to run. The installation process will not modify your path or cause any conflict with any previous installation of these tools you may have on your system. You may if you wish use other versions of these tools with stochasticSim if you have them installed. They will probably work, however as I have not tested it, I can not guarantee it. Links to all scripts and binaries used in this simulation framework are included under the top level bin directory (stochasticSimFramework/bin). You can copy them into another directory in your path and run them from there if you prefer. The install script uses curl to download these dependencies. You must have curl installed on your system or the install will not work (ie., for ubuntu linux, apt install curl). There are issues when building bwa aligner version 0.7.17 with [some gcc versions (> 10)]([https://pages.github.com/](https://github.com/lh3/bwa/pull/385) so we use a clone of the bwa main branch in the install which contains a fix.
 
-This script will also download ART read simulator (mountrainier2016) binaries
-and the gatk-package-4.2.2.0 jar file (containing MUTECT2 somatic variant caller).
+To build stochasticSim and associated tool dependencies you will need a basic set of developer resources set up such as GNU make, C / C++ compiler, autoconf e.t.c. On many installations these will already be in place (particularly if they have been used to build tools previously). If not however you will need to install them (with for example apt-get install on ubuntu linux, or homebrew / the appropriate developer install for Mac). These installations will require root access. Samtools (& HTSlib) depend on a number of libraries. Again, it is likely these are already on you system. On ubuntu linux you can check with,
 
-Neither the install or simulation process require root access to run.
+
+
+Finally, the install script will also download ART read simulator (mountrainier2016) binaries and the gatk-package-4.2.2.0 jar file (containing MUTECT2 somatic variant caller, requires Java 8 / JRE or SDK 1.8).
+
 
 
 ## Installation
