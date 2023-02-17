@@ -23,10 +23,27 @@ This install also builds the following publically available tools for use with t
 
 They are installed locally, in the same directory in which stochasticSim was cloned and neither the install or simulation process require root access to run. The installation process will not modify your path or cause any conflict with any previous installation of these tools you may have on your system. You may if you wish use other versions of these tools with stochasticSim if you have them installed. They will probably work, however as I have not tested it, I can not guarantee it. Links to all scripts and binaries used in this simulation framework are included under the top level bin directory (stochasticSimFramework/bin). You can copy them into another directory in your path and run them from there if you prefer. The install script uses curl to download these dependencies. You must have curl installed on your system or the install will not work (ie., for ubuntu linux, apt install curl). There are issues when building bwa aligner version 0.7.17 with [some gcc versions (> 10)](https://github.com/lh3/bwa/pull/385) so we use a clone of the bwa main branch in the install which contains a fix.
 
-To build stochasticSim and associated tool dependencies you will need a basic set of developer resources set up such as GNU make, C / C++ compiler, autoconf e.t.c. On many installations these will already be in place (particularly if they have been used to build tools previously). If not however you will need to install them (with for example apt-get install on ubuntu linux, or homebrew / the appropriate developer install for Mac). These installations will require root access. Samtools (& HTSlib) depend on a number of libraries. Again, it is likely these are already on you system. On ubuntu linux you can check with,
+To build stochasticSim and associated tool dependencies you will need a basic set of developer resources set up such as GNU make, C / C++ compiler, autoconf e.t.c. On many installations these will already be in place (particularly if they have been used to build tools previously). If not however you will need to install them (with for example apt-get install on ubuntu linux, or homebrew / the appropriate developer install for Mac). These installations will require root access. Samtools (& HTSlib) depend on a number of libraries. Again, it is likely these are already on you system. On ubuntu linux for example you can check with,
 
+```
+$ apt -qq list autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libncurses-dev
 
-
+autoconf/jammy,jammy,now 2.71-2 all [installed]
+automake/jammy,jammy,now 1:1.16.5-1.3 all [installed]
+gcc/jammy,now 4:11.2.0-1ubuntu1 amd64 [installed]
+gcc/jammy 4:11.2.0-1ubuntu1 i386
+libbz2-dev/jammy,now 1.0.8-5build1 amd64 [installed]
+                :
+                :
+                :
+```
+and if necessary, install what you need with,
+```
+$ sudo apt-get install libncurses-dev
+                :
+              e.t.c
+                :
+```
 Finally, the install script will also download ART read simulator (mountrainier2016) binaries and the gatk-package-4.2.2.0 jar file (containing MUTECT2 somatic variant caller, requires Java 8 / JRE or SDK 1.8).
 
 
