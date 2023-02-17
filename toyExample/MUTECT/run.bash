@@ -8,6 +8,8 @@
 
 if [ -z ${SAMTOOLS+xyz} ]; then SAMTOOLS=`which samtools`; fi
 
+# Make sure java is there, not much point in trying to run Mutect2 without it...
+command -v java > /dev/null || { echo -e "\n\033[7mJAVA NOT FOUND! Mutect2 will not run without it (check https://gatk.broadinstitute.org for system requirements) \033[0m" 2>&1;exit 1; }
 
 DT_STRING=`date -Iseconds`
 
