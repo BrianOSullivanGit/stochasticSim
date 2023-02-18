@@ -84,6 +84,9 @@ cd <install path>/stochasticSimFramework/stochasticSim-main/toyExample
 ```
 Depending on your hardware this will take about 8 minutes to run.
 
+The sequencing data used with this framework is simulated from phased, personalised reference files containing all germline SNV and indels variation from a real donor (HG00110, from the 1000 genomes project, in the toy example included). This is achieved by creating two personalised reference fasta files, each notionally corresponding to the maternal and paternal set of chromosomes, based on the donor's phased germline VCF. These fasta files are then used to simulate two BAM files using the ART read simulator (configured with default empirical error profile and corresponding to 50x depth of coverage in total, for the toy example). In the case of the simulated tumour sample, these BAMs are used as a base to spike in a set of somatic variants at the required loci and true allele frequencies. The BAMs are then realigned against the standard reference and merged before input to the somatic variant calling pipeline of interest. At each stage in the process, information is recorded about the source and location of every non reference site as it arises in the data. This information is critical in evaluating variant caller output at the end of this process. The files that store this information and the format used is outlined in the next section.
+
+
 ## Understanding simulation output
 Look at `<install path>/stochasticSimFramework/stochasticSim-main/toyExample/MUTECT` for the simulations results.
 Along with the variant caller output, this directory will contain the following files
@@ -112,4 +115,5 @@ The ground truth VCFs are created prior to somatic variant calling, when the sim
 
 ### Ground truth map file
 
-This file maps each record in the (filtered VCF) somatic variant caller output to the corresponding ground truth in each donor haplotype (recorded in the ground truth VCFs). The first 2 columns of each record in the ground truth map show the candidate variants genomic coordinates (ie., chromosome and locus, 1 base), relative to its alignment against the standard reference genome, as it appears in the caller output VCF.
+This file maps each record in the (filtered VCF) somatic variant caller output to its corresponding ground truth in each haplotype (recorded in the ground truth VCFs). The first 2 columns of each record in the ground truth map show the genomic coordinates (ie., chromosome and locus, 1 base) of the variant as it appears in the caller output VCF. These coordinates correspond to its aligned location in the standard reference genome.
+
