@@ -83,12 +83,33 @@ cd <install path>/stochasticSimFramework/stochasticSim-main/toyExample
 ./run.bash 50 chr19_500KB.bed
 ```
 Depending on your hardware this will take about 8 minutes to run.
+
+## Understanding simulation output
 Look at `<install path>/stochasticSimFramework/stochasticSim-main/toyExample/MUTECT` for the simulations results.
 Along with the variant caller output, this directory will contain the following files
 
 | Filename | Description |
 | --- | --- |
-| `gtMapper.hap.ref` | A tab seperated table mapping all entries in the caller filtered VCF output to their ground truth values in each haplotype. |
+| `gtMapper.hap.ref` | A tab separated table mapping all entries in the caller filtered VCF output to their ground truth values in each haplotype. |
 | `plotGtPieChart.R/pdf` | Source and associated pdf output to plot a pie chart of all caller filtered false negatives. |
 | `summary.txt` | An overall breakdown of where caller false positives/negatives occurred in this simulation and why. |
+| `T_X1_<id>.truth.vcf` | A VCF recording the true origin of every site in the first phased BAM that does not match the personalised reference. |
+| `T_X\|Y2_<id>.truth.vcf` | A VCF recording the true origin of every site in the second phased BAM that does not match the personalised reference. |
 
+### Ground truth VCFs
+
+Two ground truth VCFs files (one for each haplotype, *.truth.vcf) are created during spike-in against perfectly aligned, phased data. The filter field in each record indicates the true reason behind all non-reference loci in the data.
+
+| Filter field | Description |
+| --- | --- |
+| SEQ_ERROR | The locus does not contain an alternative allele. The non reference base(s) is a result of sequence error during simulation |
+| PASS | The locus contains a somatic variant and all reads supporting that variant were successfully spiked into the data |
+| MASKED | The locus contains a somatic variant however one or more supporting reads in the data were masked by sequence error |
+| NO_COVERAGE | The locus contains a somatic variant however no coverage was obtained at this locus during simulation (DP=0)|
+| UNDETECTED | The locus contains a somatic variant however no reads containing the alternative allele were detected during the simulation (AD for the spiked-in allele=0) |
+
+The ground truth VCFs are created prior to somatic variant calling, when the simulated data is perfectly aligned against the phased personalised donor reference. Issues that arise after the data is realigned against the standard reference and used as input to a somatic variant caller are recorded in the ground truth map file (`gtMapper.hap.ref`).
+
+### Ground truth map file
+
+This file maps each record in the (filtered VCF) somatic variant caller output to the corresponding ground truth in each donor haplotype (recorded in the ground truth VCFs). The first 2 columns of each record in the ground truth map show the candidate variants genomic coordinates (ie., chromosome and locus, 1 base), relative to its alignment against the standard reference genome, as it appears in the caller output VCF.
