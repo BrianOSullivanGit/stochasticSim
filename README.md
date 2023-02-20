@@ -117,7 +117,29 @@ The ground truth VCFs are created prior to somatic variant calling, when the sim
 
 This file maps each record in the (filtered VCF) somatic variant caller output to its corresponding ground truth in each haplotype (recorded in the ground truth VCFs). Fields 1 to 3 of each record in the ground truth map show the genomic coordinates (chromosome:locus, 1 base), allele frequency (as estimated by the caller) and FILTER field of the variant as it appears in the caller output VCF. The coordinates indicate its aligned location in the standard reference genome. Fields 4 to 7 show the corresponding genomic coordinates in the first haplotype, the single base substitution in the first haplotype (if any), FILTER field contents and allele frequency in the haplotype taken from the ground truth VCF for haplotype 1 (`T_X1_<id>.truth.vcf`). Finally, fields 8 to 11 show the corresponding genomic coordinates in the second haplotype, the single base substitution (if any), FILTER field contents and allele frequency in the haplotype taken from the ground truth VCF for haplotype 2 (`T_X2_<id>.truth.vcf`). If there is no entry in the ground truth VCF for the haplotype in question the four fields will all contain a '.', indicating they are blank. False positive somatic variant calls, where they occur, are generally as a result of sequence error, ie., neither haplotype field set in the Ground truth map file record in question is annotated as PASS or MASKED (indicating no variant was spiked-in) and one or both record a sequence error at that locus. It should be noted that Mutect2 false positive calls are rare (particularly in the toy example included, given the small target area in question). Very rarely a false positive call arises from an alignment artefact. Usually in this case both sets of haplotype fields (4 to 7 and 8 to 11) all contain '.' and the variant in question does not appear in the associated germline VCF. The alignment artefact is confirmed by examining the pileup in the realigned BAM and tracking the QNAME of the reads supporting the "variant" to their true location in the original phased set of BAMs created after spike-in.
 
-![gtMapFormat](https://user-images.githubusercontent.com/63290680/219978693-5dd2ba6f-fedf-4f1b-be12-05fd96070738.png)
+![gtMapFormat](https://user-images.githubusercontent.com/63290680/220073276-873c47ec-b6aa-49f8-bbc9-ca19bb8e758f.png)
 
-False negatives encountered using Mutect2 significantly outweigh the number of false positives. The ground truth map file allows for easy identification of filtered false negatives in Mutect2's output. False negative entries look very similar to true positive entries. One of the two haplotype field sets will be annotated as PASS or MASKED (indicating a variant was spiked-in). Field 3 however, rather than being set to "PASS" will instead contain a Mutect2 filter reason (for example, "weak_evidence"). The description of each of the Mutect2 filter fields is listed in the metadata near the top of the Mutect2 filtered VCF. 
+False negatives encountered using Mutect2 significantly outweigh the number of false positives. The ground truth map file allows for easy identification of filtered false negatives in Mutect2's output. False negative entries look very similar to true positive entries. One of the two haplotype field sets will be annotated as PASS or MASKED (indicating a variant was spiked-in). Field 3 however, rather than being set to "PASS" will instead contain a Mutect2 filter reason (for example, "weak_evidence"). The description of each of the Mutect2 filter fields is listed in the metadata near the top of the Mutect2 filtered VCF.
+
+False positive and negative calls can be easily filtered from the ground truth map file using the awk command. Foe example, to extract false negative calls,
+```
+$ awk '{if($3 !~ /PASS/) if($6 ~ /PASS/ || $6 ~ /MASK/ || $10 ~ /PASS/ || $10 ~ /MASK/) print $0}' gtMapper.hap.ref
+
+chr19:10145096	0.579	clustered_events	chr19:10144546	.	.	.	chr19:10144496	G>T	PASS	1
+chr19:10170621	0.054	normal_artifact;weak_evidence	chr19:10170071	G>A	PASS	0.049809	chr19:10170021	.	.	.
+chr19:10228685	0.052	weak_evidence	chr19:10228133	A>T	PASS	0.128522	chr19:10228082	A>G	SEQ_ERROR	0.0454545
+```
+To extract false positive calls (if there are any),
+```
+$ awk '{if($3 ~ /PASS/) if($6 !~ /PASS/ && $6 !~ /MASK/ && $10 !~ /PASS/ && $10 !~ /MASK/) print $0}' gtMapper.hap.ref
+
+chr21:15827077	0.165	PASS	chr21:15826798	A>C	SEQ_ERROR	0.285714	chr21:15826328	.	.	.
+chr21:37472816	0.231	PASS	chr21:37471383	.	.	.	chr21:37471094	T>G	SEQ_ERROR	0.25
+chr21:37511939	0.124	PASS	chr21:37510520	G>C	SEQ_ERROR	0.153846	chr21:37510231	.	.	.
+```
+To extract possible false positives due to mapping artefacts (very rare),
+```
+$ awk '{ if($3=="PASS") if($4==".") if($5==".") if($6==".")if($8==".") if($9==".") if($10==".") print $0}'
+```
+The summary.txt file, also created by the prepGtMap.bash script and discussed in the next section collates informations similar to this in a brief report output.
 
