@@ -101,7 +101,7 @@ Along with the variant caller output, this directory will contain the following 
 
 ### Ground truth VCFs
 
-Two ground truth VCFs files (one for each haplotype, *.truth.vcf) are created during spike-in against perfectly aligned, phased data. The filter field in each record indicates the true reason behind all non-reference loci in the data.
+The two ground truth VCFs files (one for each haplotype, *.truth.vcf) are created during somatic variant spike-in on BAM data that is perfectly aligned aginst the appropriate personalised haploid reference of the phased pair. The purpose of these files is to record the true reason behind all non-reference loci in the data so we can explain why somatic variants are missed or incorrectly called later in the pipeline when the variant calling has been run. The filter field, indicating the true reason for the non-reference site is enumerated as follows,
 
 | Filter field | Description |
 | --- | --- |
@@ -111,7 +111,9 @@ Two ground truth VCFs files (one for each haplotype, *.truth.vcf) are created du
 | NO_COVERAGE | The locus contains a somatic variant however no coverage was obtained at this locus during simulation (DP=0)|
 | UNDETECTED | The locus contains a somatic variant however no reads containing the alternative allele were detected during the simulation (AD for the spiked-in allele=0) |
 
-The ground truth VCFs are created prior to somatic variant calling, when the simulated data is perfectly aligned against the phased personalised donor reference. Issues that arise after the data is realigned against the standard reference and used as input to a somatic variant caller are recorded in the ground truth map file (`gtMapper.hap.ref`).
+For PASS and MASKED entries, the AF attribute of the INFO field will contain the true allele frequency of the spiked-in somatic variant. The user should recall that stochasticSim accounts for the randomness in the number of reads that contain the non-reference allele at somatic mutation sites. This means that in our simulations (as in real sequencing data) the true allele frequency and the allele ratio (AD/DP) will not necessarily match (though, in general, particulary at reasonably high depth, the will be close). PASS and MASKED entries will always list the allele depth (AD) of the spiked-in allele second (directly after the reference allele depth). Otherwise (for SEQ_ERROR entries) AF entry in the INFO field will contain the allele ratio of the first error "allele" (the one with the highest alt. allele depth). Similary (for SEQ_ERROR) the depths of any other error alleles will be listed in decending order after the reference allele depth in the SAMPLE field.
+
+The ground truth VCFs are created prior to somatic variant calling, when the simulated data is perfectly aligned against the phased personalised donor reference. Issues that arise after the data is realigned against the standard reference and used as input to a somatic variant caller are recorded in the ground truth map file (`gtMapper.hap.ref`). This file, which maps each entry in the somatic caller VCF to its corresponding entries in each of the ground truth VCF files, is described in the following section.
 
 ### Ground truth map file
 
