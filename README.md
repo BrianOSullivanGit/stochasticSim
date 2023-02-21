@@ -9,6 +9,7 @@ Contact BrianOSullivan@yahoo.com with questions.
 - [Installation](#installation)
 - [Getting started](#getting-started)
 - [Understanding simulation output](#understanding-simulation-output)
+- [List of stochasticSim commands and their format](#list-of-stochasticsim-commands-and-their-formats)
 
 ## System requirements
 
@@ -130,6 +131,7 @@ The ground truth VCFs are created prior to somatic variant calling, when the sim
 This file (`gtMapper.hap.ref`) maps each record in the (filtered VCF) somatic variant caller output to its corresponding ground truth in each haplotype (recorded in the ground truth VCFs). Fields 1 to 3 of each record in the ground truth map show the genomic coordinates (chromosome:locus, 1 base), allele frequency (as estimated by the caller) and FILTER field of the variant as it appears in the caller output VCF. The coordinates indicate its aligned location in the standard reference genome. Fields 4 to 7 show the corresponding genomic coordinates in the first haplotype, the single base substitution in the first haplotype (if any), FILTER field contents and allele frequency in the haplotype taken from the ground truth VCF for haplotype 1 (`T_X1_<id>.truth.vcf`). Finally, fields 8 to 11 show the corresponding genomic coordinates in the second haplotype, the single base substitution (if any), FILTER field contents and allele frequency in the haplotype taken from the ground truth VCF for haplotype 2 (`T_X2_<id>.truth.vcf`). If there is no entry in the ground truth VCF for the haplotype in question the four fields will all contain a '.', indicating that the base at this locus corresponds to that found in the donors personalised reference. False positive somatic variant calls, where they occur, are generally as a result of sequence error, ie., neither haplotype field set in the Ground truth map file record in question is annotated as PASS or MASKED (indicating no variant was spiked-in) and one or both record a sequence error at that locus. It should be noted that Mutect2 false positive calls are rare (particularly in the toy example included, given the small target area in question). Very rarely a false positive call may arise from an alignment artefact. Usually in that case both sets of haplotype fields (4 to 7 and 8 to 11) all contain '.', the variant is passed by Mutect2 (field 3 == PASS)  and the variant in question does not appear in the associated germline VCF. The alignment artefact is confirmed by examining the pileup in the realigned BAM and tracking the QNAME of the reads supporting the "variant" to their true location in the original phased set of BAMs created after spike-in.
 
 ![gtMapFormat](https://user-images.githubusercontent.com/63290680/220073276-873c47ec-b6aa-49f8-bbc9-ca19bb8e758f.png)
+*Sample output from the Ground truth map file.*
 
 False negatives encountered using Mutect2 significantly outweigh the number of false positives. The ground truth map file allows for easy identification of filtered false negatives in Mutect2's output. False negative entries look very similar to true positive entries. One of the two haplotype field sets will be annotated as PASS or MASKED (indicating a variant was spiked-in). Field 3 however, rather than being set to "PASS" will instead contain a Mutect2 filter reason (for example, "weak_evidence"). The description of each of the Mutect2 filter fields is listed in the metadata near the top of the Mutect2 filtered VCF.
 
@@ -156,11 +158,58 @@ $ awk '{ if($3=="PASS") if($4==".") if($5==".") if($6==".")if($8==".") if($9==".
 The summary.txt file, also created by the prepGtMap.bash script and discussed in the next section collates informations similar to this in a brief report output.
 
 ### The summary file
-The summary is a text file that records a log of the standard output from the prepGtMap.bash command. It provides an overview in plain English on how many true somatic variants were simulated, how many were identified by the caller, how many were filtered incorrectly and how many were missed completely (ie., how many left no record whatsoever in the output VCF). It also provides a breakdown of any false positives etc. An example of this plot is shown below.
+The summary is a text file that records a log of the standard output from the prepGtMap.bash command. It provides an overview in plain English on how many true somatic variants were simulated, how many were identified by the caller, how many were filtered incorrectly and how many were missed completely (ie., how many left no record whatsoever in the callers output VCF). It also provides a breakdown of any false positives.
 
-### Filtered false negatives and VAF plots.
-This pie chart breaks down the contributions of each Mutect2 filter to false negatives listed in its VCF output (i.e., true somatic variants that were incorrectly filtered by the caller as artefacts). The R source to create the plot is also included in the caller directory. Bear in mind that the false negatives listed as filtered by the caller only represent a fraction of the total number of false negatives which Mutect2 failed to call. At about 50x Mutect2 will ignore most of the low frequency burden without leaving any record (ie., filter reason) in the VCF output. This is evidenced by the order of magnitude difference in scale of the y-axis between the ground truth variant allele frequency plot (ie., the true frequencies present in the sample) and the variant allele frequency plot as estimated from variant frequencies called by Mutect2.
+### Filtered false negatives and VAF pdf plots.
+This Filtered false negatives pie chart breaks down the contributions of each Mutect2 filter to false negatives listed in its VCF output (i.e., true somatic variants that were incorrectly filtered by the caller as artefacts). The R source to create the plot is also included in the caller directory (i.e., toyExample/MUTECT). Bear in mind that the false negatives listed as filtered by the caller only represent a fraction of the total number of false negatives which Mutect2 failed to call. At about 50x Mutect2 will ignore most of the low frequency burden without leaving any record (ie., filter reason) in its VCF output. The majority of false negatives not listed as filtered by Mutect2 come from the low frequency end of the spectrum. This is evidenced by the order of magnitude difference in scale of the y-axis between the ground truth variant allele frequency plot (ie., the true frequencies present in the sample) and the variant allele frequency plot as estimated from variant frequencies called by Mutect2 below.
 
 
 ![toyExPlotM2GT](https://user-images.githubusercontent.com/63290680/220210089-a16b8e2b-0003-4238-94eb-92147a685150.png)
 *Selected output from the toy example showing the contribution of each filter to false negatives and a set of VAF plots. The first VAF plot shows the distribution of the true frequencies present in the sample, the second Mutect2s estimation of those frequencies from the subset of variants it detected.*
+
+## List of stochasticSim commands and their formats
+
+### createPersonalisedMaskedTarget.bash
+**SYNOPSIS**
+
+The format is,
+
+```
+$ createPersonalisedMaskedTarget.sh <ID prefix> \
+                                         <sex, m|f>
+                                             <standard reference genome>
+                                                 <phased germline VCF>
+                                                     <target BED>
+                                                         <flanking region, if required>
+
+```
+where,
+| Argument | Description |
+| --- | --- |
+| ID prefix | An output file prefix string that will be used as an identifier for all output filenames.|
+| sex, m\|f | Sex of the donor. Y chromosome included in simulation if male. Otherwise both phased genome fasta files contain only an X.|
+| standard reference genome | Location of the standard reference genome|
+| phased germline VCF | Location of donor germline VCF containing SNV and indel information.|
+| target BED | Location of BED file specifying target region|
+| flanking region | If specified, additional number of bases extending on either side of each range in the target BED file to be included in the simulation. May be useful to simulate off-target capture of just to increase the target region size if required.|
+
+**DESCRIPTION**
+
+Create a phased, personalised reference genome that is modified to reflect target region of interest. Usually executed as the first stage in the simulation process. All locations outside the target area will have their contents replaced with 'N' bases to avoid reads being simulated from these regions. In addition to the pair of phased fasta reference files this command also output a number of other files for use in subsequent steps.   
+    
+For example,
+```
+../bin/createPersonalisedMaskedTarget.bash HG00110 F GRCh38.d1.vd1.chr21.fa HG00110.chr21.vcf chr21.exons_ranges.bed
+```
+This command will output the following files,
+
+| Filename | Description |
+| --- | --- |
+| X1_\<ID prefix\>.fa | reference assembly for haplotype 1|
+| X\|Y2_\<ID prefix\>.fa |  reference assembly for haplotype 2|
+| X1_\<ID prefix>\.\<target BED\>.fa | reference assembly for haplotype 1, masked to only include target region|
+| X\|Y2_\<ID prefix\>.\<target BED\>.fa | reference assembly for haplotype 2, masked to only include target region|
+| X1_\<ID prefix\>.\<target BED\>.merged.bed.gz | Target region lifted over to haplotype 1 reference assembly|
+| X\|Y2_\<ID prefix\>.\<target_BED\>.merged.bed.gz | Target region lifted over to haplotype 2 reference assembly|
+| liftover_X1_\<ID prefix\>.txt | A liftover file, enabling mapping between genomic locations in the standard reference and those in reference assembly for haplotype 1|
+| liftover_X1_\<ID prefix\>.txt | A liftover file, enabling mapping between genomic locations in the standard reference and those in reference assembly for haplotype 2|
