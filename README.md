@@ -25,7 +25,7 @@ This install also builds the following publically available tools for use with t
 
 They are installed locally, in the same directory in which `stochasticSim` was cloned and neither the install or simulation process require root access to run. The installation process will not modify your path or cause any conflict with any previous installation of these tools you may have on your system. You may if you wish use other versions of these tools with `stochasticSim` if you have them installed. They will probably work, however as I have not tested it, I can not guarantee it. Links to all scripts and binaries used in this simulation framework are included under the top level bin directory (`stochasticSimFramework/bin`). You can copy them into another directory in your path and run them from there if you prefer. The install script uses curl to download these dependencies. You must have curl installed on your system or the install will not work (ie., for ubuntu linux, `apt install curl`). There are issues when building bwa aligner version 0.7.17 with [some gcc versions (> 10)](https://github.com/lh3/bwa/pull/385) so we use a clone of the bwa main branch in the install which contains a fix.
 
-To build `stochasticSim` and associated tool dependencies you will need a basic set of developer resources set up such as GNU make, C / C++ compiler, autoconf e.t.c. On many installations these will already be in place (particularly if they have been used to build tools previously). If not however you will need to install them. On Ubuntu Linux this may require the [build-essential package](https://packages.ubuntu.com/focal/build-essential) `sudo apt-get install build-essential`, on MacOS `xcode-select -install` or the MacOS Xcode tools (see the [Ubuntu Package archive](https://packages.ubuntu.com) or [Apple's Xcode site](https://developer.apple.com/xcode) for relevant information and downloads). These installations will require root access. Samtools (& HTSlib) also depend on a number of libraries. Again, these may already be on you system. On Ubuntu linux, for example, you can check with,
+To build `stochasticSim` and associated tool dependencies you will need a basic set of developer resources set up such as GNU make, C / C++ compiler, autoconf e.t.c. On many installations these will already be in place (particularly if they have been used to build tools previously). If not however you will need to install them. On Ubuntu Linux this may require the [build-essential package](https://packages.ubuntu.com/focal/build-essential) `sudo apt-get install build-essential`, on MacOS select "command line developer tools" from `xcode-select -install` (see the [Ubuntu Package archive](https://packages.ubuntu.com) or [Apple's Xcode site](https://developer.apple.com/xcode) for relevant information and downloads). These installations will require root access. Samtools (& HTSlib) also depend on a number of libraries. Again, these may already be on you system. On Ubuntu linux, for example, you can check with,
 
 ```
 $ apt -qq list autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libncurses-dev
@@ -175,7 +175,7 @@ This Filtered false negatives pie chart breaks down the contributions of each Mu
 The format is,
 
 ```
-$ createPersonalisedMaskedTarget.sh <ID prefix> \
+$ createPersonalisedMaskedTarget.bash <ID prefix> \
                                          <sex, m|f>
                                              <standard reference genome>
                                                  <phased germline VCF>
@@ -213,3 +213,74 @@ This command will output the following files,
 | X\|Y2_\<ID prefix\>.\<target_BED\>.merged.bed.gz | Target region lifted over to haplotype 2 reference assembly|
 | liftover_X1_\<ID prefix\>.txt | A liftover file, enabling mapping between genomic locations in the standard reference and those in reference assembly for haplotype 1|
 | liftover_X1_\<ID prefix\>.txt | A liftover file, enabling mapping between genomic locations in the standard reference and those in reference assembly for haplotype 2|
+
+### generatePhasedBams.bash
+**SYNOPSIS**
+
+The format is,
+
+```
+$ generatePhasedBams.bash <haplotype 1 reference>
+                              <haplotype 2 reference>
+                                  <read length>
+                                     <depth>
+                                         <mean fragment length>
+                                             <user suffix>
+
+```
+where,
+| Argument | Description |
+| --- | --- |
+| haplotype 1 reference | The personalised target genome, as created in the previous step. |
+| haplotype 2 reference | The second (phased) personalised target genome, as created in the previous step. |
+| read length | Length of reads to be simulated. |
+| Coverage | Coverage argument passed within parenthesis to ART. May be fold ("-f \<fold coverage\>") or read cound ("-c \<number of reads\>"). |
+| mean fragment length | Average insert length of data to be simulated. |
+| user suffix | An output file prefix string that will be used as an identifier for all output filenames. |
+
+**DESCRIPTION**
+
+This simulates phased sets of tumour and normal BAMs plus index files that will be used as a base to spike in the required somatic distribution. Usually executed as the second step in the simulation process (after createPersonalisedMaskedTarget.bash).
+    
+For example,
+```
+$ ../bin/generatePhasedBams.bash X1_HG00110.chr21.exons_ranges.fa X2_HG00110.chr21.exons_ranges.fa 76 "-f 25" 180 "25x_76bp"
+```
+This command will output the following files,
+
+| Filename | Description |
+| --- | --- |
+| T_X1_\<ID prefix\>.bam | Haplotype 1 pre-Tumour BAM file |
+| T_X1_\<ID prefix\>.bam.bai | Haplotype 1 pre-Tumour BAM index |
+| T_X2_\<ID prefix\>.bam | Haplotype 1 pre-Tumour BAM file |
+| T_X2_\<ID prefix\>.bam.bai | Haplotype 1 pre-Tumour BAM index |
+| N_X1_\<ID prefix\>.bam | Haplotype 1 Normal BAM file |
+| N_X1_\<ID prefix\>.bam.bai | Haplotype 1 Normal BAM index |
+| N_X2_\<ID prefix\>.bam | Haplotype 1 Normal BAM file |
+| N_X2_\<ID prefix\>.bam.bai | Haplotype 1 Normal BAM index |
+
+
+### xxx.bash
+**SYNOPSIS**
+
+The format is,
+
+```
+$ 
+
+```
+where,
+| Argument | Description |
+| --- | --- |
+
+**DESCRIPTION**
+  
+    
+For example,
+```
+$ ../bin/createPersonalisedMaskedTarget.bash HG00110 F GRCh38.d1.vd1.chr21.fa HG00110.chr21.vcf chr21.exons_ranges.bed
+```
+This command will output the following files,
+
+| Filename | Description |
+| --- | --- |
