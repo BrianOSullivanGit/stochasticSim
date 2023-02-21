@@ -19,7 +19,7 @@
 # source the 'tool.path' file in the simulation framework bin directory before running it.
 if [ -z ${TWOWAYLIFTOVER+xyz} ]; then TWOWAYLIFTOVER=`which 2wayLiftover`; fi
 if [ -z ${GTMAPPER+xyz} ]; then GTMAPPER=`which gtMapper`; fi
-if [ -z ${DATAMASH+xyz} ]; then DATAMASH=`which datamash"`; fi
+if [ -z ${DATAMASH+xyz} ]; then DATAMASH=`which datamash`; fi
 
 # Note:
 # Do we need to reorder by haplotype, then reference coordinate order?
@@ -36,7 +36,7 @@ echo "Lifting over target loci for haplotype 1, using ${2}"
 source tmp.cmds.$$ > targetsHap1.loci
 
 # Cross check target loci against the GT VCF.
-(${GTMAPPER} ${4} targetsHap1.loci || { echo -e "\n\033[7mGTMAPPER failed with haplotype 1 ! \033[0m" 1>&2;exit 1; }) | awk '{ gsub(".*AF=","",$8);if($4!=".") print $1":"$2"\t"$4">"$5"\t"$7"\t"$8; else print $1":"$2"\t.\t.\t." }' > gtMapper.hap1
+(${GTMAPPER} ${4} targetsHap1.loci || { echo -e "\n\033[7mGTMAPPER failed with haplotype 1 ! \033[0m" 1>&2; kill -HUP $$; }) | awk '{ gsub(".*AF=","",$8);if($4!=".") print $1":"$2"\t"$4">"$5"\t"$7"\t"$8; else print $1":"$2"\t.\t.\t." }' > gtMapper.hap1
 
 # Repeat for Haplotype 2.
 
@@ -50,7 +50,7 @@ echo "Lifting over target loci for haplotype 2, using ${3}"
 source tmp.cmds.$$ > targetsHap2.loci
 
 # Cross check target loci against the GT VCF.
-(${GTMAPPER} ${5} targetsHap2.loci || { echo -e "\n\033[7mGTMAPPER failed with haplotype 2 ! \033[0m" 1>&2;exit 1; }) | awk '{ gsub(".*AF=","",$8);if($4!=".") print $1":"$2"\t"$4">"$5"\t"$7"\t"$8; else print $1":"$2"\t.\t.\t." }' > gtMapper.hap2
+(${GTMAPPER} ${5} targetsHap2.loci || { echo -e "\n\033[7mGTMAPPER failed with haplotype 2 ! \033[0m" 1>&2; kill -HUP $$; }) | awk '{ gsub(".*AF=","",$8);if($4!=".") print $1":"$2"\t"$4">"$5"\t"$7"\t"$8; else print $1":"$2"\t.\t.\t." }' > gtMapper.hap2
 
 # Get the filter fields and caller inferred allele frequencies from the VCF for all SBSs (again in ref. coordinate order).
 # NB: This assumes the tumour format attributes are located in field 11 of the VCF record!!!
@@ -209,8 +209,8 @@ df2 <- data.frame(
   ) 
            
 pdf(file = "%s",   # where you want to save the file
-    width = 15, # The width of the plot in inches
-    height = 5) # The height of the plot in inches
+    width = 10, # The width of the plot in inches
+    height = 10) # The height of the plot in inches
 ggplot(df2, aes(x = "" , y = value, fill = tmpFct_inorder(group))) +
     geom_col(width = 1, color = 1) +
     coord_polar(theta = "y") +
@@ -220,12 +220,34 @@ ggplot(df2, aes(x = "" , y = value, fill = tmpFct_inorder(group))) +
                      size = 4.5, nudge_x = 1, show.legend = FALSE) +
     guides(fill = guide_legend(title = "Filtered false negatives")) +
     theme_void()
-dev.off()\n' "$rscriptPath" "$value" "$filtr" "${outputpdf}"> plotGtPieChart.R
+dev.off()\n' "$rscriptPath" "$value" "$filtr" "${outputpdf}" > plotGtPieChart.R
+
+# VAF plots
+printf '#!%s
+
+pdf(file = "%s",   # where you want to save the file
+    width = 10, # The width of the plot in inches
+    height = 6) # The height of the plot in inches
+    
+# Shell commands to parse out the ground truth allele frequencies from spike-in files.
+groundTruthAlleleFrequenciesParseCommand="cat ~/tmp3/stochasticSim-main/toyExample/*.spike| awk %c{ print $4/2 }%c"
+x = unlist(read.table(pipe(groundTruthAlleleFrequenciesParseCommand)))
+hist(x,xlim=c(0,1),breaks=100, main="Ground truth mutant allele frequencies", ylab="Number of mutations", xlab="Allele frequency")
+
+# Shell commands to parse out allele frequencies from VCF output.
+vcfAlleleFrequenciesParseCommand="zcat ~/tmp3/stochasticSim-main/toyExample/MUTECT/HG00110.chr19_500KB_50x_76bp.realn.phased.filtered.vcf.gz | egrep -v %c^#%c | awk %c{if($7==\\"PASS\\" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) {split($9,format,\\":\\");split($11,formatContentsTumour,\\":\\"); for(i in format){formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print formatAttributesTumour[\\"AF\\"]} }%c"
+
+x = unlist(read.table(pipe(vcfAlleleFrequenciesParseCommand)))
+hist(x,xlim=c(0,1),breaks=100, main="Mutant allele frequencies as estimted by Mutect2", ylab="Number of mutations", xlab="Allele frequency")
+
+dev.off()
+
+\n' "${rscriptPath}" "plotsVAF.pdf" "'" "'" "'" "'" "'" "'" > plotsVAF.R
 
 # Remove temp files
 rm targetsHap1.loci gtMapper.hap1 tmp.cmds.$$ targetsHap2.loci gtMapper.hap2 targets.filters.ref fp.$$.list delme.$$
 
 # Create pie chart output.
-chmod u+x plotGtPieChart.R
-command -v Rscript > /dev/null && ./plotGtPieChart.R
+chmod u+x plotGtPieChart.R plotsVAF.R
+command -v Rscript > /dev/null && { ./plotGtPieChart.R; ./plotsVAF.R; }
 exit 0
