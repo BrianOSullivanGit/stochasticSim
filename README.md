@@ -259,6 +259,50 @@ This command will output the following files,
 | N_X2_\<ID prefix\>.bam | Haplotype 1 Normal BAM file |
 | N_X2_\<ID prefix\>.bam.bai | Haplotype 1 Normal BAM index |
 
+### spikeIn.bash
+**SYNOPSIS**
+
+The format is,
+
+```
+$ spikeIn.bash  <haplotype 1 pre-tumour BAM> \
+                  <haplotype 2 pre-tumour BAM>  \
+                     <haplotype 1 reference> \
+                        <haplotype 2 reference> \
+                           <haplotype 1 tumour somatics list> \
+                              <haplotype 2 tumour somatics list>
+```
+where,
+| Argument | Description |
+| --- | --- |
+| haplotype 1 pre-tumour BAM | A pre-tumour BAM simulated from haplotype 1 reference. |
+| haplotype 1 pre-tumour BAM | A pre-tumour BAM simulated from haplotype 2 reference. |
+| haplotype 1 reference | Fasta file detailing the first set of chromosomes in the personalised, diploid reference assembly. |
+| haplotype 2 reference | Fasta file detailing the second set. |
+| haplotype 1 tumour somatics list | A tab seperated file listing the genomic location and types of SNVs to be simulated in hap. 1. |
+| haplotype 2 tumour somatics list | Equivalent tab seperated file for hap. 2. |
+
+**DESCRIPTION**
+
+This command spikes in the required burden to pre-tumour BAM files. In real genomic sequencing data the observed number of reads containing the alternate allele is a random variable. This is also the case when spiking in variants with the simulation framework. With spikeIn.bash (& the binary stochasticSpike it calls), the probability of any given read at the target pileup picking up the synthetic alternate allele is taken as the true alternate allele frequency. By accounting for the random nature of genomic sequencing, our simulations more accurately reflect the frequency profile of real tumour genomic sequencing data.
+
+For example,
+```
+$ ../bin/spikeIn.bash T_X1_HG00110.chr21.exons_ranges_25x_76bp.bam \
+                        T_X2_HG00110.chr21.exons_ranges_25x_76bp.bam \
+                           X1_HG00110.chr21.exons_ranges.fa X2_HG00110.chr21.exons_ranges.fa \
+                              chr21.h1.TMB_743mutMb.NE.spike \
+                                 chr21.h2.TMB_743mutMb.NE.spike
+```
+This command will output the following files,
+
+| Filename | Description |
+| --- | --- |
+| haplotype 1 tumour BAM | A tumour BAM (from haplotype 1) containing the required burden. |
+| haplotype 2 tumour BAM | A tumour BAM (from haplotype 2) containing the required burden. |
+| tumour hap 1 index | Tumour BAM (from haplotype 1) index. |
+| tumour hap 2 index| Tumour BAM (from haplotype 2) index. |
+
 
 ### xxx.bash
 **SYNOPSIS**
