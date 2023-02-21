@@ -8,6 +8,7 @@ Contact BrianOSullivan@yahoo.com with questions.
 - [System requirements](#system-requirements)
 - [Installation](#installation)
 - [Getting started](#getting-started)
+- [Understanding simulation output](#understanding-simulation-output)
 
 ## System requirements
 
@@ -111,7 +112,8 @@ The two ground truth VCFs files (one for each haplotype, *.truth.vcf) are create
 | NO_COVERAGE | The locus contains a somatic variant however no coverage was obtained at this locus during simulation (DP=0)|
 | UNDETECTED | The locus contains a somatic variant however no reads containing the alternative allele were detected during the simulation (AD for the spiked-in allele=0) |
 
-For PASS and MASKED entries, the AF attribute of the INFO field will contain the true allele frequency of the spiked-in somatic variant. The user should recall that stochasticSim accounts for the randomness in the number of reads that contain the non-reference allele at somatic mutation sites. This means that in our simulations (as in real sequencing data) the true allele frequency and the allele ratio (AD/DP) will not necessarily match (though, in general, particulary at reasonably high depth, the will be close). PASS and MASKED entries will always list the allele depth (AD) of the spiked-in allele second (directly after the reference allele depth). Otherwise (for SEQ_ERROR entries) AF entry in the INFO field will contain the allele ratio of the first error "allele" (the one with the highest alt. allele depth). Similary (for SEQ_ERROR) the depths of any other error alleles will be listed in decending order after the reference allele depth in the SAMPLE field. A selection of entries from a ground truth VCF is shown below.
+For PASS and MASKED entries, the AF attribute of the INFO field will contain the true allele frequency of the spiked-in somatic variant. The user should recall that stochasticSim accounts for the randomness in the number of reads that contain the non-reference allele at somatic mutation sites. This means that in our simulations (as in real sequencing data) the true allele frequency and the allele ratio (AD/DP) will not necessarily match (though, in general, particularly at reasonably high depth, they will be close). PASS and MASKED entries will always list the allele depth (AD) of the spiked-in allele second (directly after the reference allele depth). Otherwise (for SEQ_ERROR entries) AF entry in the INFO field will contain the allele ratio of the first error "allele" (the one with the highest alt. allele depth). Similarly (for SEQ_ERROR) the depths of any other error alleles will be listed in descending order after the reference allele depth in the SAMPLE field. A sequencer error that (by chance) creates the same allele as the somatic variant at a MASKED locus will be listed separately in the SAMPLE field. For example the MASKED variant record from the selection of ground truth VCF entries below indicates that 3 reads containing the somatic 'A' allele were picked up by the sequencer. It also indicates that a sequencer error occurred in one or more other reads which also contained the somatic 'A' allele, causing it to be incorrectly read as a 'T'. Finally, another sequencer error occurred at the same locus causing one of the reads containing the reference 'C' allele to be incorrectly read as an 'A'. The vast majority of entries in the ground truth VCF files however will record non-reference sites caused by single read sequence error (SEQ_ERROR, AD=1).
+
 
 ```
 #CHROM     POS             ID      REF     ALT     QUAL    FILTER      INFO               FORMAT  SAMPLE
@@ -147,9 +149,18 @@ chr21:15827077	0.165	PASS	chr21:15826798	A>C	SEQ_ERROR	0.285714	chr21:15826328	.
 chr21:37472816	0.231	PASS	chr21:37471383	.	.	.	chr21:37471094	T>G	SEQ_ERROR	0.25
 chr21:37511939	0.124	PASS	chr21:37510520	G>C	SEQ_ERROR	0.153846	chr21:37510231	.	.	.
 ```
-To extract possible false positives due to mapping artefacts (very rare),
+Foe example, to extract possible false positives due to mapping artefacts (very rare),
 ```
-$ awk '{ if($3=="PASS") if($4==".") if($5==".") if($6==".")if($8==".") if($9==".") if($10==".") print $0}'
+$ awk '{ if($3=="PASS") if($4==".") if($5==".") if($6==".")if($8==".") if($9==".") if($10==".") print $0}' gtMapper.hap.ref
 ```
 The summary.txt file, also created by the prepGtMap.bash script and discussed in the next section collates informations similar to this in a brief report output.
 
+### The summary file
+The summary is a text file that records a log of the standard output from the prepGtMap.bash command. It provides an overview in plain English on how many true somatic variants were simulated, how many were identified by the caller, how many were filtered incorrectly and how many were missed completely (ie., how many left no record whatsoever in the output VCF). It also provides a breakdown of any false positives etc. An example of this plot is shown below.
+
+### Filtered false negatives and VAF plots.
+This pie chart breaks down the contributions of each Mutect2 filter to false negatives listed in its VCF output (i.e., true somatic variants that were incorrectly filtered by the caller as artefacts). The R source to create the plot is also included in the caller directory. Bear in mind that the false negatives listed as filtered by the caller only represent a fraction of the total number of false negatives which Mutect2 failed to call. At about 50x Mutect2 will ignore most of the low frequency burden without leaving any record (ie., filter reason) in the VCF output. This is evidenced by the order of magnitude difference in scale of the y-axis between the ground truth variant allele frequency plot (ie., the true frequencies present in the sample) and the variant allele frequency plot as estimated from variant frequencies called by Mutect2.
+
+
+![toyExPlotM2GT](https://user-images.githubusercontent.com/63290680/220210089-a16b8e2b-0003-4238-94eb-92147a685150.png)
+*Selected output from the toy example showing the contribution of each filter to false negatives and a set of VAF plots. The first VAF plot shows the distribution of the true frequencies present in the sample, the second Mutect2s estimation of those frequencies from the subset of variants it detected.*
