@@ -2,6 +2,8 @@
 
 *A set of software tools providing comprehensive and realistic simulation of tumour genomic sequencing data.*
 
+This framework accounts for the random nature of genomic sequencing to accurately reflect the frequency profile captured in real tumour genomic sequencing data. The ground truth associated with the simulation output is recorded for every non-reference locus in the data. Every record in the VCF output by the caller (either PASS or filtered) is mapped back to its true location in the phased personalised donor record to definitively identify false positives / negatives and their causes.
+
 Contact BrianOSullivan@yahoo.com with questions.
 
 ## Table of contents<!-- omit in toc -->
