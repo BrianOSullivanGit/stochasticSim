@@ -168,6 +168,12 @@ This Filtered false negatives pie chart breaks down the contributions of each Mu
 ![toyExPlotM2GT](https://user-images.githubusercontent.com/63290680/220210089-a16b8e2b-0003-4238-94eb-92147a685150.png)
 *Selected output from the toy example showing the contribution of each filter to false negatives and a set of VAF plots. The first VAF plot shows the distribution of the true frequencies present in the sample, the second Mutect2s estimation of those frequencies from the subset of variants it detected.*
 
+### Limitations of the toy example
+As the name suggests the example included with this framework is a toy example. It can be used as a base for constructing more comprehensive simulations, however the researcher should be aware of the following limitations and address these if required for use with their application.
+
+- The chr19 genome included with the toy simulation is a subset of the standard reference. It was small enough to include on the github page. A small genome obviously speeds up the calling process. In the real world you are obviously not going to be sure all your reads come from chr19 so, if you haven't already download the standard reference plus indexes and use those in your simulations (i.e., `wget https://api.gdc.cancer.gov/data/254f697d-310d-4d7d-a27b-27fbf767a834; tar zxvf 254f697d-310d-4d7d-a27b-27fbf767a834; bwa index -a bwtsw GRCh38.d1.vd1.fa` )
+- The target area is very small (500KB). It works well for a demo. However, most gene panels are probably around four times that (1 or 2 MB), an exons only exome is around 35MB. You can by all means increase it but as you move past gene panel BEDs and get to exome capture BEDs e.t.c. you will probably need to run this on a cluster.
+
 ## List of stochasticSim commands and their formats
 
 ### createPersonalisedMaskedTarget.bash
@@ -295,7 +301,7 @@ $ ../bin/spikeIn.bash T_X1_HG00110.chr21.exons_ranges_25x_76bp.bam \
                               chr21.h1.TMB_743mutMb.NE.spike \
                                  chr21.h2.TMB_743mutMb.NE.spike
 ```
-This command will output the following files,
+Note that input BAM files must be indexed. This command will output the following files,
 
 | Filename | Description |
 | --- | --- |
@@ -304,6 +310,43 @@ This command will output the following files,
 | tumour hap 1 index | Tumour BAM (from haplotype 1) index. |
 | tumour hap 2 index| Tumour BAM (from haplotype 2) index. |
 
+### realignAndMerge.bash
+**SYNOPSIS**
+
+The format is,
+
+```
+$ realignAndMerge.bash  <haplotype 1 BAM> \
+                         <haplotype 2 BAM>  \
+                           <reference> \
+                             <output BAM prefix>
+
+```
+where,
+| Argument | Description |
+| --- | --- |
+| haplotype 1 BAM | BAM file with hap. 1 burden, aligned to personalised reference for hap. 1 |
+| haplotype 2 BAM | BAM file with hap. 2 burden, aligned to personalised reference for hap. 2 |
+| reference | the standard reference (i.e., GRCh38.d1.vd1.fa) |
+| output BAM prefix | What you want to call the realigned, combined output BAM |
+
+**DESCRIPTION**
+
+This command is used to realign and merge a tumour or normal phased BAM pair. It is usually the final stage in the simulation process before somatic variant calling.
+    
+For example,
+```
+$ ../bin/realignAndMerge.bash T_X1_HG00110.exons_ranges_25x_76bp.spike.bam  \
+                                T_X2_HG00110.exons_ranges_25x_76bp.spike.bam \
+                                  GRCh38.d1.vd1.fa \
+                                    T_HG00110.exons_ranges_50x_76bp
+```
+This command will output the following file,
+
+| Filename | Description |
+| --- | --- |
+| \<output BAM prefix\>.bam | Tumour BAM with burden spiked in and aligned against standard reference |
+| \<output BAM prefix\>.bam.bai | Corresponding tumour BAM index |
 
 ### xxx.bash
 **SYNOPSIS**
