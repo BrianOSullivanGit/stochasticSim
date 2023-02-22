@@ -175,13 +175,13 @@ As the name suggests the example included with this framework is a toy example. 
 - The target area is very small (500KB). It works well for a demo. However, most gene panels are probably around four times that (1 or 2 MB), an exons only exome is around 35MB. You can by all means increase it but as you move past gene panel BEDs and get to exome capture BEDs e.t.c. you will probably need to run this on a cluster.
 - The coverage of 50X is low for somatic mutation calling. It makes for a quicker simulation but I think, in general, 100X should be the minimum for  calling somatic mutations. Consider increasing it in your simulations.
 - The target BED used in the toy example is over simplistic (just a contiguous 500KB chunk of chromosome 19). You can of course make your target regions as numerous and complex as you require. Bear in mind however that in these simulations, as in real sequencing data, coverage at the beginning of a capture region does not start at 100X (or whatever) and continue at 100x until the last locus in that target. It ramps up near the start, levels off in the middle and tails off near the end. If your overall target is fragmented into many regions (like for example a merged BED of exons) you are going to end up with less than the average depth of coverage you requested (in `generatePhasedBams.bash`). To work around this, consider adding a flanking region at the start and end of each range (the last optional argument in `createPersonalisedMaskedTarget.sh`). This will pad it out a bit, causing nearby ranges to merge and giving you more even coverage. You may also want to increase the overall coverage a bit to compensate, or use a combination of both approaches. When it comes to dealing with this issue, just like with target capture of real data, the choice is yours.
-- The burden used in the toy example is very high (TMB = 850 mut/MB). While there are tumour samples with this level of burden, they are rare. The reason a high burden was chosen was to compensate for the small target area and low depth of coverage of the toy simulation. A a lower burden on a larger target and higher depth should still yield interesting results. For example a 100X exome target, 50 base flanking, with 8 mut/MB would probably yield about 5 or 10 times as many filtered false negatives as the toy example. Set the level of burden according to your requirements / model of tumour evolution.
+- The burden used in the toy example is very high (TMB = 850 mut/MB). This explains the number of candidate variants filtered with "clustered_events". While there are tumour samples with this level of burden, they are rare. The reason a high burden was chosen was to compensate for the small target area and low depth of coverage of the toy simulation. A a lower burden on a larger target and higher depth should still yield interesting results. For example a 100X exome target, 50 base flanking, with 8 mut/MB would probably yield about 5 or 10 times as many filtered false negatives as the toy example. Set the level of burden according to your requirements / model of tumour evolution.
 - For more extensive simulations using this framework have a look at the github detailing methods used in the publication associated with this framework (link to follow..) or contact BrianOSullivan@yahoo.com .
 
 
 ## List of stochasticSim commands and their formats
 
-Some of the more common commands used when setting up a simulation with this framework are shown below. **Please note that all BED, BAM and spike-in config files must be sorted in chromosome and coordinate order before using them with any of these commands. BAM files must also be indexed.** For a simple example of a script to run a simulation see stochasticSim-main/toyExample/run.bash .
+Some of the more common commands used when setting up a simulation with this framework are shown below. **Please note that all VCF, BED, BAM and spike-in config files must be sorted in chromosome and coordinate order before using them with any of these commands. BAM files must also be indexed.** For a simple example of a script to run a simulation see stochasticSim-main/toyExample/run.bash .
 
 ### createPersonalisedMaskedTarget.bash
 **SYNOPSIS**
@@ -228,6 +228,31 @@ This command will output the following files,
 | liftover_X1_\<ID prefix\>.txt | A liftover file, enabling mapping between genomic locations in the standard reference and those in reference assembly for haplotype 1|
 | liftover_X1_\<ID prefix\>.txt | A liftover file, enabling mapping between genomic locations in the standard reference and those in reference assembly for haplotype 2|
 
+### condenseLift
+**SYNOPSIS**
+This (binary) converts the liftover*.txt files created by the previous command to a much smaller and compact format for use with subsequent commands. Once the conversion is complete the original liftover*.txt may be deleted. Usually executed as the second step in the simulation, directly after `createPersonalisedMaskedTarget.bash`.
+
+The format is,
+
+```
+$ ../bin/condenseLift \<large format liftover file\>
+
+```
+where,
+| Argument | Description |
+| --- | --- |
+| liftover_X\|Y1\|2_HG00110.txt | large format liftover file |
+
+**DESCRIPTION**
+  
+    
+For example,
+```
+$ ../bin/condenseLift liftover_X1_HG00110.txt > liftover_X1_HG00110.condense.txt
+```
+This command outputs to the standard out which may be redirected to a file as shown in the example above.
+
+
 ### generatePhasedBams.bash
 **SYNOPSIS**
 
@@ -254,7 +279,7 @@ where,
 
 **DESCRIPTION**
 
-This simulates phased sets of tumour and normal BAMs plus index files that will be used as a base to spike in the required somatic distribution. Usually executed as the second step in the simulation process (after createPersonalisedMaskedTarget.bash).
+This simulates phased sets of tumour and normal BAMs plus index files that will be used as a base to spike in the required somatic distribution. Usually executed as the third step in the simulation process.
     
 For example,
 ```
@@ -298,7 +323,7 @@ where,
 
 **DESCRIPTION**
 
-This command spikes in the required burden to pre-tumour BAM files. In real genomic sequencing data the observed number of reads containing the alternate allele is a random variable. This is also the case when spiking in variants with the simulation framework. With spikeIn.bash (& the binary stochasticSpike it calls), the probability of any given read at the target pileup picking up the synthetic alternate allele is taken as the true alternate allele frequency. By accounting for the random nature of genomic sequencing, our simulations more accurately reflect the frequency profile of real tumour genomic sequencing data.
+This command spikes in the required burden to pre-tumour BAM files. In real genomic sequencing data the observed number of reads containing the alternate allele is a random variable. This is also the case when spiking in variants with the simulation framework. With spikeIn.bash (& the binary stochasticSpike it calls), the probability of any given read at the target pileup picking up the synthetic alternate allele is taken as the true alternate allele frequency. By accounting for the random nature of genomic sequencing, our simulations more accurately reflect the frequency profile of real tumour genomic sequencing data. This command is usually executed as the fourth step in the simulation process after the pre-tumour BAMs have been created.
 
 For example,
 ```
@@ -373,7 +398,7 @@ where,
     
 For example,
 ```
-$ ../bin/createPersonalisedMaskedTarget.bash HG00110 F GRCh38.d1.vd1.chr21.fa HG00110.chr21.vcf chr21.exons_ranges.bed
+$ ../bin/
 ```
 This command will output the following files,
 
