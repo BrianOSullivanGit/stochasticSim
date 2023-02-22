@@ -181,6 +181,8 @@ As the name suggests the example included with this framework is a toy example. 
 
 ## List of stochasticSim commands and their formats
 
+Some of the more common commands used when setting up a simulation with this framework are shown below. **Please note that all BED, BAM and spike-in config files must be sorted in chromosome and coordinate order before using them with any of these commands. BAM files must also be indexed.** For a simple example of a script to run a simulation see stochasticSim-main/toyExample/run.bash .
+
 ### createPersonalisedMaskedTarget.bash
 **SYNOPSIS**
 
