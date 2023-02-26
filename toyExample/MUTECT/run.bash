@@ -45,6 +45,7 @@ java -Xmx16g -jar ${LATEST_MUTECT_JAR} \
             -I ${NORMAL_WITH_RG} \
             -tumor ${TUMOUR_SAMPLE} \
             -normal ${NORMAL_SAMPLE} \
+            -germline-resource ../af-only-gnomad.hg38.chr19.pass.vcf.gz \
             -panel-of-normals ../1000g_pon.hg38.chr19.vcf.gz \
             -tumor-lod-to-emit 0 \
             -O ${VCF_NAME}.vcf.gz || { echo -e "\n\033[7mMUTECT2 failed! \033[0m" 2>&1;exit 1; } 
