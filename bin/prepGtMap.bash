@@ -230,12 +230,12 @@ pdf(file = "%s",   # where you want to save the file
     height = 6) # The height of the plot in inches
     
 # Shell commands to parse out the ground truth allele frequencies from spike-in files.
-groundTruthAlleleFrequenciesParseCommand="cat ~/tmp3/stochasticSim-main/toyExample/*.spike| awk %c{ print $4/2 }%c"
-x = unlist(read.table(pipe(groundTruthAlleleFrequenciesParseCommand)))
-hist(x,xlim=c(0,1),breaks=100, main="Ground truth mutant allele frequencies", ylab="Number of mutations", xlab="Allele frequency")
+# If they are not found in the parent directory it ignores it and moves on.
+groundTruthAlleleFrequenciesParseCommand="cat ../*.spike| awk %c{ print $4/2 }%c"
+try({x = unlist(read.table(pipe(groundTruthAlleleFrequenciesParseCommand)));hist(x,xlim=c(0,1),breaks=100, main="Ground truth mutant allele frequencies", ylab="Number of mutations", xlab="Allele frequency")}, silent=TRUE)
 
 # Shell commands to parse out allele frequencies from VCF output.
-vcfAlleleFrequenciesParseCommand="zcat ~/tmp3/stochasticSim-main/toyExample/MUTECT/HG00110.chr19_500KB_50x_76bp.realn.phased.filtered.vcf.gz | egrep -v %c^#%c | awk %c{if($7==\\"PASS\\" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) {split($9,format,\\":\\");split($11,formatContentsTumour,\\":\\"); for(i in format){formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print formatAttributesTumour[\\"AF\\"]} }%c"
+vcfAlleleFrequenciesParseCommand="zcat *.filtered.vcf.gz | egrep -v %c^#%c | awk %c{if($7==\\"PASS\\" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) {split($9,format,\\":\\");split($11,formatContentsTumour,\\":\\"); for(i in format){formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print formatAttributesTumour[\\"AF\\"]} }%c"
 
 x = unlist(read.table(pipe(vcfAlleleFrequenciesParseCommand)))
 hist(x,xlim=c(0,1),breaks=100, main="Mutant allele frequencies as estimted by Mutect2", ylab="Number of mutations", xlab="Allele frequency")
