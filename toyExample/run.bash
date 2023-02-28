@@ -1,7 +1,7 @@
 #!/bin/bash
 
 target=`echo ${2} | sed 's/\.bed$//1'`
-hapDepth=`bc -l <<< "scale=0;${1}/2"`
+hapDepth=`expr ${1} / 2`
 
 echo -e "\033[7mStart Simulaion for ${target} at ${1}X for donor HG00110\033[0m\n"
 
