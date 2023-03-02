@@ -1,7 +1,9 @@
+HTSLIB_static_LIBS := $(shell bash -c "grep HTSLIB_static_LIBS ${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION}/htslib_static.mk | sed -e 's/.* = //1'")
+
 all: stochasticSpike createDonorGenome liftover targetRef condenseLift gtMapper 2wayLiftover
 
 stochasticSpike: Makefile
-	cc -std=c99 -Wall -g -O2 -I${SAMTOOLS_BUILD_PATH} -I${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION} -I${SAMTOOLS_BUILD_PATH}/lz4  -o ./bin/stochasticSpike stochasticSpike.c ${SAMTOOLS_BUILD_PATH}/libst.a ${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION}/libhts.a -lpthread -lz -lm -lbz2 -llzma -lcurl -lcrypto
+	cc -std=c99 -Wall -g -O2 -I${SAMTOOLS_BUILD_PATH} -I${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION} -I${SAMTOOLS_BUILD_PATH}/lz4  -o ./bin/stochasticSpike stochasticSpike.c ${SAMTOOLS_BUILD_PATH}/libst.a ${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION}/libhts.a ${HTSLIB_static_LIBS}
 
 createDonorGenome: Makefile	
 	cc -std=c99 createDonorGenome.c -o ./bin/createDonorGenome
