@@ -158,6 +158,12 @@ echo "export TARGETREF="`pwd`"/${stochasticSimDirName}/bin/targetRef" >> bin/too
 echo "export CONDENSE_LIFT="`pwd`"/${stochasticSimDirName}/bin/condenseLift" >> bin/tool.path
 echo "export GTMAPPER="`pwd`"/${stochasticSimDirName}/bin/gtMapper" >> bin/tool.path
 echo "export TWOWAYLIFTOVER="`pwd`"/${stochasticSimDirName}/bin/2wayLiftover" >> bin/tool.path
+echo "export CREATEPERSONALISEDMASKEDTARGET_BASH="`pwd`"/${stochasticSimDirName}/bin/createPersonalisedMaskedTarget.bash" >> bin/tool.path
+echo "export GENERATEPHASEDBAMS_BASH="`pwd`"/${stochasticSimDirName}/bin/generatePhasedBams.bash" >> bin/tool.path
+echo "export PREPGTMAP_BASH="`pwd`"/${stochasticSimDirName}/bin/prepGtMap.bash" >> bin/tool.path
+echo "export REALIGNANDMERGE_BASH="`pwd`"/${stochasticSimDirName}/bin/realignAndMerge.bash" >> bin/tool.path
+echo "export SPIKEIN_BASH="`pwd`"/${stochasticSimDirName}/bin/spikeIn.bash" >> bin/tool.path
+
 
 
 # Finally setup the reference, target bed and somatic variant caller that we will use in our toyExample.
