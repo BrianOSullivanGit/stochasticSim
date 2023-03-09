@@ -120,10 +120,35 @@ date | tr '\012' ':'
 echo " Build bedtools 2.29.2"	
 curl -L https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools-2.29.2.tar.gz | tar zxvf - || { echo -e "\n\033[7mBEDTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 6; } 
 cd bedtools2/
+# Fix for bedtools install issue with some verion of Mac (clang) compiler.
+# There may also be a problem with python "not found" (ie., a 2.7 -> 3.0 thing)
+# Consider installing python-is-python3 if you're on ubuntu.
+# 
+# Putting in a temp fix for now.
+
+if [ "$(uname)" == "Darwin" ]; then
+    # Install under Mac OS X platform
+    # Workaround for compiler problem
+    mv ./src/utils/gzstream/version ./src/utils/gzstream/version.txt
+fi
+
+OLDPATH=${PATH}
+if command -v python > /dev/null; then
+    # Now workaround for python version issue
+    mkdir $$
+    cd $$
+    ln -s /usr/bin/python3 python
+    export PATH=`pwd`:${PATH}
+    cd ..
+fi
+
 make || { echo -e "\n\033[7mBEDTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 7; }
 cd ../
 ln -s ../bedtools2/bin/bedtools bin/bedtools
 echo "export BEDTOOLS="`pwd`"/bedtools2/bin/bedtools" >> bin/tool.path
+# Restore old path 
+export PATH=${OLDPATH}
+rm -fr $$ 2>/dev/null
 
 # Datamash
 curl -L http://ftp.gnu.org/gnu/datamash/datamash-1.3.tar.gz | tar zxvf - || { echo -e "\n\033[7mDATAMASH download failed. Resolve issues before proceeding.\033[0m";exit 7; } 
