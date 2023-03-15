@@ -153,7 +153,7 @@ cd datamash-1.3
 make || { echo -e "\n\033[7mDATAMASH Build failed. Resolve issues before proceeding.\033[0m";exit 1; }
 make check || { echo -e "\n\033[7mWARNING DATAMASH Build check failed. Trying to proceed with datamash binary that was created. Please check and resolve any issues.\033[0m"; }
 
-if [ -x bin/datamash ]; then
+if [ -x datamash-1.3/datamash ]; then
   # OK it built the datamash binary at least, try to work with that.
   cd ../
   ln -s ../datamash-1.3/datamash bin/datamash
