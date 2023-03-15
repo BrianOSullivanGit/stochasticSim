@@ -77,7 +77,7 @@ ${SAMTOOLS} index ${hap2BamPrefix}.realn.bam || { echo -e "\n\033[7mSAMTOOLS IND
 
 date | tr '\012' ':'
 echo " Merge both haplotypes into single BAM (${4}.realn.phased.bam)."
-samtools merge ${4}.realn.phased.bam ${hap1BamPrefix}.realn.bam ${hap2BamPrefix}.realn.bam || { echo -e "\n\033[7mSAMTOOLS MERGE failed! \033[0m"  1>&2;exit 1; } 
+${SAMTOOLS} merge ${4}.realn.phased.bam ${hap1BamPrefix}.realn.bam ${hap2BamPrefix}.realn.bam || { echo -e "\n\033[7mSAMTOOLS MERGE failed! \033[0m"  1>&2;exit 1; } 
 
 date | tr '\012' ':'
 echo " Index the merged BAM."
