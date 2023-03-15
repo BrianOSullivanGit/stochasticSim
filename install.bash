@@ -79,15 +79,15 @@ echo "export ALIGNER="`pwd`"/bwa/bwa" >> bin/tool.path
 # Samtools
 date | tr '\012' ':'
 echo " Build samtools 1.13."
-curl -L https://github.com/samtools/samtools/releases/download/1.13/samtools-1.13.tar.bz2 | tar jxvf - || { echo -e "\n\033[7mSAMTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 2; }
+curl -L https://github.com/samtools/samtools/releases/download/1.13/samtools-1.13.tar.bz2 | tar jxvf - || { echo -e "\n\033[7mSAMTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 1; }
 cd samtools-1.13
 mkdir local_copy_output
 
 # If you are installing on a system without curses update accordingly.
 #./configure --prefix=${PWD}/local_copy_output --without-curses
 ./configure --prefix=${PWD}/local_copy_output
-make || { echo -e "\n\033[7mSAMTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 3; }
-make install || { echo -e "\n\033[7mSAMTOOLS install failed. Resolve issues before proceeding.\033[0m";exit 4; }
+make || { echo -e "\n\033[7mSAMTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 1; }
+make install || { echo -e "\n\033[7mSAMTOOLS install failed. Resolve issues before proceeding.\033[0m";exit 1; }
 # This is needed by sim. framework that links htslib.
 SAMTOOLS_BUILD_PATH=${PWD}
 HTSLIB_VERSION=`ls -d htslib-* | sed 's/.*-//'`
@@ -103,10 +103,10 @@ echo " Install ART read simulator (mountrainier2016) binaries."
 # Just install binaries..
 if [ "$(uname)" == "Darwin" ]; then
     # Install under Mac OS X platform
-    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05macos64.tgz | tar zxvf - || { echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 3; } 
+    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05macos64.tgz | tar zxvf - || { echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     # Install under GNU/Linux platform
-    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05linux64.tgz | tar zxvf - || { echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 4; } 
+    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05linux64.tgz | tar zxvf - || { echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
 else
     echo "Platform \"$(uname)\" not supported...exiting..."
     exit 5
@@ -118,7 +118,7 @@ echo "export READ_SIMULATOR="`pwd`"/art_bin_MountRainier/art_illumina" >> bin/to
 # Bedtools
 date | tr '\012' ':'
 echo " Build bedtools 2.29.2"	
-curl -L https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools-2.29.2.tar.gz | tar zxvf - || { echo -e "\n\033[7mBEDTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 6; } 
+curl -L https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools-2.29.2.tar.gz | tar zxvf - || { echo -e "\n\033[7mBEDTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
 cd bedtools2/
 # Fix for bedtools install issue with some verion of Mac (clang) compiler.
 # There may also be a problem with python "not found" (ie., a 2.7 -> 3.0 thing)
@@ -132,39 +132,43 @@ if [ "$(uname)" == "Darwin" ]; then
     mv ./src/utils/gzstream/version ./src/utils/gzstream/version.txt
 fi
 
-OLDPATH=${PATH}
-if command -v python > /dev/null; then
-    # Now workaround for python version issue
-    mkdir $$
-    cd $$
-    ln -s /usr/bin/python3 python
-    export PATH=`pwd`:${PATH}
-    cd ..
+python --version 2>&1 > /dev/null || { echo -e "\n\033[7mWARNING Can't find a version of python available to this script (is python3 linked to python?). This may cause problems.\033[0m"; }
+
+make || { echo -e "\n\033[7mWARNING BEDTOOLS Build failed. Trying to proceed with bedtools binary that was created. Please check and resolve any issues.\033[0m"; }
+
+if [ -x bin/bedtools ]; then
+  # OK it built the bedtools binary at least, try to work with that.
+  cd ../
+  ln -s ../bedtools2/bin/bedtools bin/bedtools
+  echo "export BEDTOOLS="`pwd`"/bedtools2/bin/bedtools" >> bin/tool.path
+else
+  echo -e "\n\033[7mFailed to build BEDTOOLS binary. Please resolve issues before proceeding.\033[0m"
+  exit 1
 fi
 
-make || { echo -e "\n\033[7mBEDTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 7; }
-cd ../
-ln -s ../bedtools2/bin/bedtools bin/bedtools
-echo "export BEDTOOLS="`pwd`"/bedtools2/bin/bedtools" >> bin/tool.path
-# Restore old path 
-export PATH=${OLDPATH}
-rm -fr $$ 2>/dev/null
-
 # Datamash
-curl -L http://ftp.gnu.org/gnu/datamash/datamash-1.3.tar.gz | tar zxvf - || { echo -e "\n\033[7mDATAMASH download failed. Resolve issues before proceeding.\033[0m";exit 7; } 
+curl -L http://ftp.gnu.org/gnu/datamash/datamash-1.3.tar.gz | tar zxvf - || { echo -e "\n\033[7mDATAMASH download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
 cd datamash-1.3
 ./configure
-make || { echo -e "\n\033[7mDATAMASH Build failed. Resolve issues before proceeding.\033[0m";exit 8; }
-make check || { echo -e "\n\033[7mDATAMASH Build check failed. Resolve issues before proceeding.\033[0m";exit 9; }
-cd ../
-ln -s ../datamash-1.3/datamash bin/datamash
-echo "export DATAMASH="`pwd`"/datamash-1.3/datamash" >> bin/tool.path
+make || { echo -e "\n\033[7mDATAMASH Build failed. Resolve issues before proceeding.\033[0m";exit 1; }
+make check || { echo -e "\n\033[7mWARNING DATAMASH Build check failed. Trying to proceed with datamash binary that was created. Please check and resolve any issues.\033[0m"; }
+
+if [ -x bin/datamash ]; then
+  # OK it built the datamash binary at least, try to work with that.
+  cd ../
+  ln -s ../datamash-1.3/datamash bin/datamash
+  echo "export DATAMASH="`pwd`"/datamash-1.3/datamash" >> bin/tool.path
+else
+  echo -e "\n\033[7mFailed to build DATAMASH binary. Please resolve issues before proceeding.\033[0m"
+  exit 1
+fi
+
 
 # Now build stochastic sim. framework
 date | tr '\012' ':'
 echo " Build ${stochasticSimDirName}"	
 cd ${stochasticSimDirName}
-make all || { echo -e "\n\033[7mSTOCHASTICSIM Build failed. Resolve issues before proceeding.\033[0m";exit 10; }
+make all || { echo -e "\n\033[7mSTOCHASTICSIM Build failed. Resolve issues before proceeding.\033[0m";exit 1; }
 cd ../
 ln -s ../${stochasticSimDirName}/bin/createDonorGenome bin/createDonorGenome
 ln -s ../${stochasticSimDirName}/bin/liftover bin/liftover
@@ -198,12 +202,12 @@ cd ${stochasticSimDirName}/toyExample
 # Unpack the reference and bed file etc. for this toy example.
 tar zxvf GRCh38.d1.vd1.HG00110.chr19.tgz
 # Index it.
-../../bwa/bwa index -a bwtsw GRCh38.d1.vd1.chr19.fa || { echo -e "\n\033[7mFailed to index GRCh38 chr19 genome. Resolve issues before proceeding.\033[0m";exit 11; }
+../../bwa/bwa index -a bwtsw GRCh38.d1.vd1.chr19.fa || { echo -e "\n\033[7mFailed to index GRCh38 chr19 genome. Resolve issues before proceeding.\033[0m";exit 1; }
  
 # Setup caller (Mutect2)
 date | tr '\012' ':'
 echo " Download GATK 4.2.2.0 jar."
-wget --no-verbose https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip || { echo -e "\n\033[7mGATK JAR download failed. Resolve issues before proceeding.\033[0m";exit 12; } 
+wget --no-verbose https://github.com/broadinstitute/gatk/releases/download/4.2.2.0/gatk-4.2.2.0.zip || { echo -e "\n\033[7mGATK JAR download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
 unzip gatk-4.2.2.0.zip
 rm gatk-4.2.2.0.zip
 cd ../../
@@ -214,7 +218,7 @@ cp bin/tool.path ${stochasticSimDirName}/bin
 
 # Check if the links to any of these tools are broken.
 ls bin | while read line; do if [ ! -e bin/${line} ]; then echo ${line}; fi; done > $$.prob.lst
-if [ -s $$.prob.lst ]; then echo -e "\n\033[7mINSTALL ERROR:\033[0m There was a problem building the following tools,\n"; cat $$.prob.lst;echo -e "\nCheck back through the install output to resolve the issue before proceeding."; rm $$.prob.lst; exit 13; fi
+if [ -s $$.prob.lst ]; then echo -e "\n\033[7mINSTALL ERROR:\033[0m There was a problem building the following tools,\n"; cat $$.prob.lst;echo -e "\nCheck back through the install output to resolve the issue before proceeding."; rm $$.prob.lst; exit 1; fi
 rm $$.prob.lst
 
 #The demo simulation included is based on the allele frequency distribution
