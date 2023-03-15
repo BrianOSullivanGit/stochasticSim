@@ -13,6 +13,7 @@
 # The path to the set of tools that have been tested is specified in a file
 # tool.path that is located in ..../stochasticSim-x.y/bin.
 
+if [ -z ${SAMTOOLS+xyz} ]; then SAMTOOLS=`which samtools`; fi
 if [ -z ${BEDTOOLS+xyz} ]; then BEDTOOLS=`which bedtools`; fi
 if [ -z ${CREATEDONORGENOME+xyz} ]; then CREATEDONORGENOME=`which createDonorGenome`; fi
 if [ -z ${LIFTOVER+xyz} ]; then LIFTOVER=`which liftover`; fi
@@ -34,7 +35,7 @@ bedPrefix=`echo ${5} | sed -e 's/.*\///1' -e 's/\.bed.*$//1'`
 date | tr '\012' ':'
 cat /dev/null > ${refPrefix}.chr1-22XY.fa
 echo ' Subset reference to contain only chr1-22XY.'
-(seq 1 1 22|sed 's/^/chr/1';echo chrX;echo chrY) | while read line; do samtools faidx ${3} ${line} 2>/dev/null > $$.fa && cat $$.fa >> ${refPrefix}.chr1-22XY.fa; done
+(seq 1 1 22|sed 's/^/chr/1';echo chrX;echo chrY) | while read line; do ${SAMTOOLS} faidx ${3} ${line} 2>/dev/null > $$.fa && cat $$.fa >> ${refPrefix}.chr1-22XY.fa; done
 rm $$.fa
 
 
