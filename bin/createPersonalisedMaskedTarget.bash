@@ -109,12 +109,12 @@ date | tr '\012' ':'
 echo ' Liftover target BED to align with personalised donor genome.'
 if [ "${2}" = "F" -o "${2}" = "f" ]
 then
-    (${LIFTOVER}  liftover_X1_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) chrY || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;kill -HUP $$; }) | gzip > X1_${1}_${bedPrefix}.merged.bed.gz
-    (${LIFTOVER}  liftover_X2_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) chrY || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;kill -HUP $$; }) | gzip > X2_${1}_${bedPrefix}.merged.bed.gz
+    (${LIFTOVER}  liftover_X1_${1}.txt <(gzip -cd ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) chrY || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;kill -HUP $$; }) | gzip > X1_${1}_${bedPrefix}.merged.bed.gz
+    (${LIFTOVER}  liftover_X2_${1}.txt <(gzip -cd ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) chrY || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;kill -HUP $$; }) | gzip > X2_${1}_${bedPrefix}.merged.bed.gz
 else
     echo "Not fully implemented yet!!!!!!!"
-    (${LIFTOVER}  liftover_X1_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;kill -HUP $$; }) | gzip > X1_${1}_${bedPrefix}.merged.bed.gz
-    (${LIFTOVER}  liftover_X2_${1}.txt <(zcat ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;kill -HUP $$; }) | gzip > X2_${1}_${bedPrefix}.merged.bed.gz
+    (${LIFTOVER}  liftover_X1_${1}.txt <(gzip -cd ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;kill -HUP $$; }) | gzip > X1_${1}_${bedPrefix}.merged.bed.gz
+    (${LIFTOVER}  liftover_X2_${1}.txt <(gzip -cd ${bedPrefix}.sorted.filtered.${flankingLength}bpFlanking.merged.bed.gz) || { echo -e "\n\033[7mLIFTOVER failed! \033[0m" 1>&2 ;kill -HUP $$; }) | gzip > X2_${1}_${bedPrefix}.merged.bed.gz
 fi
 
 
@@ -122,5 +122,5 @@ fi
 # (ie., overwrite non matching regions with "N"'s so no reads are generated from those regions).
 date | tr '\012' ':'
 echo " Subset personalised genome to only include required targets.."
-${TARGETREF} X1_${1}.fa <(zcat X1_${1}_${bedPrefix}.merged.bed.gz) > X1_${1}.${bedPrefix}.fa || { echo -e "\n\033[7mSUBSET TARGET hap. 1 failed! \033[0m" 1>&2;exit 1; }
-${TARGETREF} X2_${1}.fa <(zcat X2_${1}_${bedPrefix}.merged.bed.gz) > X2_${1}.${bedPrefix}.fa || { echo -e "\n\033[7mSUBSET TARGET hap. 2 failed! \033[0m" 1>&2;exit 1; }
+${TARGETREF} X1_${1}.fa <(gzip -cd X1_${1}_${bedPrefix}.merged.bed.gz) > X1_${1}.${bedPrefix}.fa || { echo -e "\n\033[7mSUBSET TARGET hap. 1 failed! \033[0m" 1>&2;exit 1; }
+${TARGETREF} X2_${1}.fa <(gzip -cd X2_${1}_${bedPrefix}.merged.bed.gz) > X2_${1}.${bedPrefix}.fa || { echo -e "\n\033[7mSUBSET TARGET hap. 2 failed! \033[0m" 1>&2;exit 1; }

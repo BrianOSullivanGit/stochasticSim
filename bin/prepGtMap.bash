@@ -27,7 +27,7 @@ if [ -z ${DATAMASH+xyz} ]; then DATAMASH=`which datamash`; fi
 # (decision, yes, so no action..) 
 
 # Find target loci (loci of interest in the VCF for which we want fo pull out the ground truth) in haplotype 1.
-zcat ${1} | egrep -v '^#' | awk -v liftoverFile="${2}" '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") print "${TWOWAYLIFTOVER} r "$1":"$2" "liftoverFile}' > tmp.cmds.$$
+gzip -cd ${1} | egrep -v '^#' | awk -v liftoverFile="${2}" '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") print "${TWOWAYLIFTOVER} r "$1":"$2" "liftoverFile}' > tmp.cmds.$$
 
 
 date | tr '\012' ':'
@@ -41,7 +41,7 @@ source tmp.cmds.$$ > targetsHap1.loci
 # Repeat for Haplotype 2.
 
 # Find target loci (loci of interest in the VCF for which we want fo pull out the ground truth) in haplotype 2.
-zcat ${1} | egrep -v '^#' | awk -v liftoverFile="${3}" '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") print "${TWOWAYLIFTOVER} r "$1":"$2" "liftoverFile}' > tmp.cmds.$$
+gzip -cd ${1} | egrep -v '^#' | awk -v liftoverFile="${3}" '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") print "${TWOWAYLIFTOVER} r "$1":"$2" "liftoverFile}' > tmp.cmds.$$
 
 
 date | tr '\012' ':'
@@ -56,7 +56,7 @@ source tmp.cmds.$$ > targetsHap2.loci
 # NB: This assumes the tumour format attributes are located in field 11 of the VCF record!!!
 # (ie., this is a tumour normal pair from a GATK generated VCF with > v4.0.
 # If it is not then your AF values man not be correct!!)
-zcat ${1} | egrep -v '^#' | awk '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") {split($9,format,":");split($11,formatContentsTumour,":"); for(i in format) {formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print $1":"$2"\t"formatAttributesTumour["AF"]"\t"$7} }' > targets.filters.ref
+gzip -cd ${1} | egrep -v '^#' | awk '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") {split($9,format,":");split($11,formatContentsTumour,":"); for(i in format) {formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print $1":"$2"\t"formatAttributesTumour["AF"]"\t"$7} }' > targets.filters.ref
 
 # Finally combine the two into one file, removing redundant columns.
 paste targets.filters.ref gtMapper.hap1 gtMapper.hap2 > gtMapper.hap.ref
@@ -235,7 +235,7 @@ groundTruthAlleleFrequenciesParseCommand="cat ../*.spike| awk %c{ print $4/2 }%c
 try({x = unlist(read.table(pipe(groundTruthAlleleFrequenciesParseCommand)));hist(x,xlim=c(0,1),breaks=100, main="Ground truth mutant allele frequencies", ylab="Number of mutations", xlab="Allele frequency")}, silent=TRUE)
 
 # Shell commands to parse out allele frequencies from VCF output.
-vcfAlleleFrequenciesParseCommand="zcat *.filtered.vcf.gz | egrep -v %c^#%c | awk %c{if($7==\\"PASS\\" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) {split($9,format,\\":\\");split($11,formatContentsTumour,\\":\\"); for(i in format){formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print formatAttributesTumour[\\"AF\\"]} }%c"
+vcfAlleleFrequenciesParseCommand="gzip -cd *.filtered.vcf.gz | egrep -v %c^#%c | awk %c{if($7==\\"PASS\\" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) {split($9,format,\\":\\");split($11,formatContentsTumour,\\":\\"); for(i in format){formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print formatAttributesTumour[\\"AF\\"]} }%c"
 
 x = unlist(read.table(pipe(vcfAlleleFrequenciesParseCommand)))
 hist(x,xlim=c(0,1),breaks=100, main="Mutant allele frequencies as estimted by Mutect2", ylab="Number of mutations", xlab="Allele frequency")
