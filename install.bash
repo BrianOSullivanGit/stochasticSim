@@ -83,9 +83,15 @@ curl -L https://github.com/samtools/samtools/releases/download/1.13/samtools-1.1
 cd samtools-1.13
 mkdir local_copy_output
 
-# If you are installing on a system without curses update accordingly.
-#./configure --prefix=${PWD}/local_copy_output --without-curses
-./configure --prefix=${PWD}/local_copy_output
+# Workaround to install on a system without curses.
+if [ -d /usr/include/ncurses ]; then
+  # Assume ncurses is there, install as normal
+  ./configure --prefix=${PWD}/local_copy_output
+else
+  # User does not want or is unable to install ncurses, try without,
+  ./configure --prefix=${PWD}/local_copy_output --without-curses
+fi
+
 make || { echo -e "\n\033[7mSAMTOOLS Build failed. Resolve issues before proceeding.\033[0m";exit 1; }
 make install || { echo -e "\n\033[7mSAMTOOLS install failed. Resolve issues before proceeding.\033[0m";exit 1; }
 # This is needed by sim. framework that links htslib.
