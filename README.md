@@ -7,11 +7,33 @@ This framework accounts for the random nature of genomic sequencing to accuratel
 Contact BrianOSullivan@yahoo.com with questions.
 
 ## Table of contents<!-- omit in toc -->
+- [If you are in a hurry..](#if-you-are-in-a-hurry)
 - [System requirements](#system-requirements)
 - [Installation](#installation)
 - [Getting started](#getting-started)
 - [Understanding simulation output](#understanding-simulation-output)
 - [List of stochasticSim commands and their format](#list-of-stochasticsim-commands-and-their-formats)
+
+
+## If you are in a hurry..
+The commands to install the framework and run the toy example are shown below. If you just want to set this up, modify the path to "your download target directory" and cut and paste the commands below into a command tool. If you want to know what this framework does, how to use it and what to do if something goes wrong, skip this step and read on.
+
+```
+# Make a working directory and download framework.
+cd <your download target directory>
+mkdir stochasticSimFramework
+cd stochasticSimFramework
+git clone https://github.com/BrianOSullivanGit/stochasticSim
+
+# Build it.
+cd stochasticSim
+./install.bash
+
+# Run toy example
+source <your download target directory>/stochasticSimFramework/stochasticSim-main/bin/tool.path
+cd <your download target directory>/stochasticSimFramework/stochasticSim-main/toyExample
+./run.bash 50 chr19_500KB.bed
+```
 
 ## System requirements
 
@@ -33,11 +55,8 @@ To build `stochasticSim` and associated tool dependencies you will need a basic 
 $ apt -qq list autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libncurses-dev
 
 autoconf/jammy,jammy,now 2.71-2 all [installed]
-automake/jammy,jammy,now 1:1.16.5-1.3 all [installed]
-gcc/jammy,now 4:11.2.0-1ubuntu1 amd64 [installed]
 gcc/jammy 4:11.2.0-1ubuntu1 i386
 libbz2-dev/jammy,now 1.0.8-5build1 amd64 [installed]
-                :
                 :
                 :
 ```
@@ -182,7 +201,7 @@ As the name suggests the example included with this framework is a toy example. 
 - The **target BED** used in the toy example is over simplistic (just a contiguous 500KB chunk of chromosome 19). You can of course make your target regions as numerous and complex as you require. Bear in mind however that in these simulations, as in real sequencing data, coverage at the beginning of a capture region does not start at 100X (or whatever) and continue at 100x until the last locus in that target. It ramps up from the start, levels off in the middle and tails off near the end. If your overall target is fragmented into many regions (like for example a merged BED of exons) you are going to end up with less than the average depth of coverage you requested (in `generatePhasedBams.bash`). To work around this, consider adding a flanking region at the start and end of each range (the last optional argument in `createPersonalisedMaskedTarget.sh`). This will pad it out a bit, causing nearby ranges to merge and giving you more even coverage. You may also want to increase the overall coverage a bit to compensate, or use a combination of both approaches. When it comes to dealing with this issue, just like with target capture of real data, the choice is yours.
 - The **burden** used in the toy example is very high (TMB = 850 mut/MB). This explains the number of candidate variants filtered with "clustered_events". While there are tumour samples with this level of burden, they are rare. The reason a high burden was chosen was to compensate for the small target area and low depth of coverage of the toy simulation. A lower burden on a larger target and higher depth should still yield interesting results. For example a 100X exome target, 50 base flanking, with 8 mut/MB would probably yield about 5 or 10 times as many filtered false negatives as the toy example. Set the level of burden according to your requirements / model of tumour evolution.
 - To keep things simple the **tumour purity** (a.k.a. cellularity) in the toy example is set at 100%. To simulate a different tumour purity simply multiply the spike-in frequencies (in .spike config file) by the tumour purity, expressed as a fraction. For example, for 75% tumour purity, `awk -v tumourPurity=0.75 '{ print $1"\t"$2"\t"$3"\t"($4*tumourPurity) }' chr19_500KB.h1.854mutMB.spike > chr19_500KB.h1.854mutMB.0.75purity.spike # Repeat for h2` Once you have created new configs for both haplotypes, re-run the spike-in, realignment and calling stages of the pipeline to complete the simulation. Please **do not try to adjust by multiplying the allele frequencies estimated by the caller by the purity** as to do so would give you a false and inflated impression of the caller's capability to detect low frequency somatic variants. Instead adjust the spike-in frequencies and re-run the required simulation stages as stated.
-- For more extensive simulations using this framework have a look at the github detailing **methods used in the publication** associated with this framework (link to follow..) or contact BrianOSullivan@yahoo.com .
+- For more extensive simulations using this framework have a look at the github detailing **methods used in the publication** associated with this framework ([https://github.com/BrianOSullivanGit/Somatic_AF_Spectra](https://github.com/BrianOSullivanGit/Somatic_AF_Spectra)) or contact BrianOSullivan@yahoo.com .
 
 
 ## List of stochasticSim commands and their formats
