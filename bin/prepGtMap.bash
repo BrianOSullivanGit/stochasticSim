@@ -5,7 +5,7 @@
 #                /common/user1/1000GENOMES/TEST3/liftover_X2_HG00110.condense.txt \
 #                /common/user1/SIM_PIPELINE/100x/T_X1_HG00110.coding_exons_hg38_100x_76bp.truth.vcf \
 #                /common/user1/SIM_PIPELINE/100x/T_X2_HG00110.coding_exons_hg38_100x_76bp.truth.vcf
-#
+#                /common/user1/Reference/HG00110.vcf
 
 
 #
@@ -20,6 +20,7 @@
 if [ -z ${TWOWAYLIFTOVER+xyz} ]; then TWOWAYLIFTOVER=`which 2wayLiftover`; fi
 if [ -z ${GTMAPPER+xyz} ]; then GTMAPPER=`which gtMapper`; fi
 if [ -z ${DATAMASH+xyz} ]; then DATAMASH=`which datamash`; fi
+if [ -z ${BEDTOOLS+xyz} ]; then BEDTOOLS=`which bedtools`; fi
 
 # Note:
 # Do we need to reorder by haplotype, then reference coordinate order?
@@ -124,9 +125,23 @@ This is because the final sequencing data is made up of sequencing data from bot
    cat fp.$$.list
 fi
 
+# Remember, information about true negatives that are germline in origin and are filtered as
+# normal_artifact will not be found in the ground truth map file.
+# All germline information is recorded in the germline VCF file that was originally used to
+# create the personalised reference etc. (for example HG00110.vcf).
+# Most variants are obviously germline in origin are removed by Mutect2 without continuing through
+# the filtering process or recording them in the VCF to save processing time.
+# This significantly reduces the number of true negatives among variants filtered as
+# normal_artifact. However we still need to check here just in case if there are any and remove them
+# from our normal_artifact false negative calculation.
+#
+# Get a list of of germline origin normal_artifact true negatives and remove them from the false negatives list.
+gzip -cd ${1} | awk 'BEGIN{print "##fileformat=VCFv4.2"}{if($7=="normal_artifact" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) print $0 }' > $$.tmp.vcf
+${BEDTOOLS} intersect -a $$.tmp.vcf -b ${6} | awk '{print $1":"$2"\t"}' > n.a.tns.$$.lst
+rm $$.tmp.vcf
 
-cat gtMapper.hap.ref|awk '{if($3!="PASS") print $0}' | egrep '(PASS|MASK)'| sed 's/\t[^\t]*;[^\t]*\t/\tmultiple_filter_failures\t/1' | ${DATAMASH} --sort  --group 3 count 3 >  delme.$$
-
+cat gtMapper.hap.ref|awk '{if($3!="PASS") print $0}' | egrep '(PASS|MASK)'| grep -v -f n.a.tns.$$.lst | sed 's/\t[^\t]*;[^\t]*\t/\tmultiple_filter_failures\t/1' | ${DATAMASH} --sort  --group 3 count 3 >  delme.$$
+rm n.a.tns.$$.lst
 totalFiltered=`cat delme.$$| ${DATAMASH} sum 2`
 
 printf "

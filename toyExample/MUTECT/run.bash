@@ -67,7 +67,8 @@ java -Xmx16g -jar ${LATEST_MUTECT_JAR} \
                               ../liftover_X1_HG00110.condense.txt \
                               ../liftover_X2_HG00110.condense.txt \
                               ${3} \
-                              ${4} 2>&1 || { echo -e "\n\033[7mGROUND TRUTH MAP failed! \033[0m" 2>&1;exit 1; }) | tee summary.txt
+                              ${4} \
+                              ../HG00110.chr19.vcf 2>&1 || { echo -e "\n\033[7mGROUND TRUTH MAP failed! \033[0m" 2>&1;exit 1; }) | tee summary.txt
 
 echo "done."
 exit 0
