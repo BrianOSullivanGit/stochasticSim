@@ -4,6 +4,8 @@
 
 This framework accounts for the random nature of genomic sequencing to accurately reflect the frequency profile captured in real tumour genomic sequencing data. The ground truth associated with the simulation output is recorded for every non-reference locus in the data. Every record in the VCF output by the caller (either PASS or filtered) is mapped back to its true location in the phased personalised donor record to definitively identify false positives / negatives and their causes.
 
+**NOTE**:  If you are looking for specific simulation details and output associated with the manuscript **"Comprehensive and realistic simulation of tumour genomic sequencing data"** please refer to the following line, https://github.com/BrianOSullivanGit/Somatic_AF_Spectra 
+
 Contact BrianOSullivan@yahoo.com with questions.
 
 ## Table of contents<!-- omit in toc -->
