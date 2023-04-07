@@ -57,7 +57,9 @@ source tmp.cmds.$$ > targetsHap2.loci
 # NB: This assumes the tumour format attributes are located in field 11 of the VCF record!!!
 # (ie., this is a tumour normal pair from a GATK generated VCF with > v4.0.
 # If it is not then your AF values man not be correct!!)
-gzip -cd ${1} | egrep -v '^#' | awk '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") {split($9,format,":");split($11,formatContentsTumour,":"); for(i in format) {formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print $1":"$2"\t"formatAttributesTumour["AF"]"\t"$7} }' > targets.filters.ref
+#
+# 7/4/23, modified to allow this to work with Mutect2 tumout-only VCF files
+gzip -cd ${1} | egrep -v '^#' | awk '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") {split($9,format,":");if(NF == 10) split($10,formatContentsTumour,":"); else split($11,formatContentsTumour,":"); for(i in format) {formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print $1":"$2"\t"formatAttributesTumour["AF"]"\t"$7} }' > targets.filters.ref
 
 # Finally combine the two into one file, removing redundant columns.
 paste targets.filters.ref gtMapper.hap1 gtMapper.hap2 > gtMapper.hap.ref
