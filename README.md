@@ -176,7 +176,7 @@ chr21:15827077	0.165	PASS	chr21:15826798	A>C	SEQ_ERROR	0.285714	chr21:15826328	.
 chr21:37472816	0.231	PASS	chr21:37471383	.	.	.	chr21:37471094	T>G	SEQ_ERROR	0.25
 chr21:37511939	0.124	PASS	chr21:37510520	G>C	SEQ_ERROR	0.153846	chr21:37510231	.	.	.
 ```
-Foe example, to extract possible false positives due to mapping artefacts (very rare),
+For example, to extract possible false positives due to mapping artefacts (very rare), enter the command below. Any variants listed that are not in the corresponding germline VCF file are likely artefacts created by misalignmed reads. You can confirm this by examining the QNAMES of the reads at the pileup location in the realigned BAM (ie., BAM that was realigned against the standard reference and used as input to Mutect calling pipeline). Compare these against the pileup at the corresponding location in the true alignment (ie., the previous BAM, simulated from the personalised genome).
 ```
 $ awk '{ if($3=="PASS") if($4==".") if($5==".") if($6==".")if($8==".") if($9==".") if($10==".") print $0}' gtMapper.hap.ref
 ```
