@@ -362,102 +362,20 @@ char selectMutantAllele(char wildType)
 
 int findOverlappingMate(const bam_pileup1_t *p, int currentLocationInPileup, const bam_pileup1_t * bottomOfPileup, int pileupSize)
 {
+
    // Is this base part of a read pair overlap?
-   // If so then we also need to locate (above us inn the pileup) and mutate the
+   // If so then we also need to locate (above us in the pileup) and mutate the
    // corresponding base in its mate and mark that it has been processed
-   // (set it's pilupIndices entry to -1).
-
-   // If the insert length associated with this bases alignment is less than
-   // the combined length of the alignment and its mate then we need to look for the
-   // overlap.
-   // Assume read and mate have same length (otherwise get MC tag and work it out
-   // from that, but that would be overkill).
-
-
-   // #################################################
-   // NOTE!!! This assumes duplicates have already been marked and removed.
-
-   // TODO!!!! should we put the following shortcut in to speed things up???
-   //      if(abs(p->b->core.isize) >
-   //         2*bam_cigar2rlen(p->b->core.n_cigar, bam_get_cigar(p->b))) return -1;
-
-   // no overlap possible, unless some wild cigar
-   //    if ( (p->b.core->mtid >= 0 && p->b->core.tid != p->b->core.mtid)
-   //         || (llabs(p->b->core.isize) >= 2*p->b->core.l_qseq
-   //         && p->b->core.mpos >= p->end) // for those wild cigars
-   //       ) return -1;
-
-
-   //  l_qseq is calculated from the total length of an alignment block on reading or from CIGAR
-   // Take a short cut and return if no overlap possible
-   // (next 10 lines lifted from stats.c)
-#define READ_ORDER_FIRST 1
-#define READ_ORDER_LAST 2
-#define IS_READ1(bam) ((bam)->core.flag&BAM_FREAD1)
-#define IS_READ2(bam) ((bam)->core.flag&BAM_FREAD2)
-
-   uint32_t order = (IS_READ1(p->b) ? READ_ORDER_FIRST : 0) + (IS_READ2(p->b) ? READ_ORDER_LAST : 0);
-   if(!(p->b->core.flag & BAM_FPAIRED) ||
-         (p->b->core.flag & BAM_FMUNMAP) ||
-         (llabs(p->b->core.isize) >= 2*p->b->core.l_qseq) ||
-         (order != READ_ORDER_FIRST && order != READ_ORDER_LAST)) {
-      return -1;
-   }
-
+   // (set it's pileupIndices entry to -1).
 
    // Run through the pileup to check if this read's mate is in there also.
-   // TODO!!!! logic in this loop could be made a bit more succinct.
+   // We check for the presence of a mate with the same QNAME.
+   // That is the only sure way to do this as insert length / flags etc. are inferred from alignment.
+   // Alignments may be incorrect. Keep it simple, just check QNAME.
    for(int x = currentLocationInPileup+1; x < pileupSize; ++x) {
-
       const bam_pileup1_t *mate = bottomOfPileup + x;
-
-      // Should we prefix this with something like,
-      // if(llabs(node->b.core.isize) >= 2*node->b.core.l_qseq) continue;
-      // to speed it up??
-      // Possible mate here? if so look in more detail..
-      if(p->b->core.isize == -(mate->b->core.isize) &&
-            p->b->core.mpos == mate->b->core.pos &&
-            p->b->core.pos == mate->b->core.mpos
-        ) {
-         // And just in case...
-         if((p->b->core.flag&BAM_FPAIRED) && !(p->b->core.flag&BAM_FPROPER_PAIR)) continue;
-         if((mate->b->core.flag&BAM_FPAIRED) && !(mate->b->core.flag&BAM_FPROPER_PAIR)) continue;
-
-         long iStart;
-         long iEnd;
-
-         // Try to confirm the first and second segment in this template.
-         // If you can't, its not a read pair overlap, move on.
-         if(p->b->core.flag & BAM_FREAD1 && mate->b->core.flag & BAM_FREAD2) {
-            iStart = p->b->core.pos;
-            iEnd = mate->b->core.mpos + bam_cigar2rlen(mate->b->core.n_cigar, bam_get_cigar(mate->b));
-            if(p->b->core.isize == (iEnd-iStart)) {
-               // TODO!!!! remove this after more testing...
-               if(strcmp(bam_get_qname(p->b), bam_get_qname(mate->b)))
-                  printf("\nERROR: YOU MISTOOK ONE MATE 1: %s(%d) : %s(%d), p->b->core.isize = %ld\n", bam_get_qname(p->b),p->b->core.flag, bam_get_qname(mate->b),mate->b->core.flag, p->b->core.isize);
-               // We've found it's overlapping mate.
+      if(!strcmp(bam_get_qname(p->b), bam_get_qname(mate->b))) {
                return x;
-            }
-
-         }
-         else if(p->b->core.flag & BAM_FREAD2 && mate->b->core.flag & BAM_FREAD1) {
-            iStart = mate->b->core.pos;
-            iEnd = p->b->core.mpos + bam_cigar2rlen(p->b->core.n_cigar, bam_get_cigar(p->b));
-            if(mate->b->core.isize == (iEnd-iStart)) {
-               // TODO!!!! remove this after more testing...
-               if(strcmp(bam_get_qname(p->b), bam_get_qname(mate->b)))
-                  printf("\nERROR: YOU MISTOOK ONE MATE 2: %s : %s\n", bam_get_qname(p->b), bam_get_qname(mate->b));
-
-               // We've found it's overlapping mate.
-               return x;
-            }
-         }
-
-         else {
-            // TODO!!!! remove this after more testing...
-            if(!strcmp(bam_get_qname(p->b), bam_get_qname(mate->b)))
-               printf("\nERROR: YOU MISSED ONE MATE 3: %s : %s\n", bam_get_qname(p->b), bam_get_qname(mate->b));
-         }
       }
    }
    return -1;
@@ -498,9 +416,7 @@ void getBaseWithRPOcheck(int pileupSize,
 
    // Are we in read pair overlap?
    if(mIdx>=0) {
-
       if(pileupIndices[mIdx] >= 0) {
-
          // Mates position in the pileup, if in read pair overlap.
          *mateIdx = mIdx;
 
@@ -784,7 +700,7 @@ void attemptToMutateBase(int pileupSize,
 
    // Case 3: Read pair overlap, readBase and mateBase both reference.
    else if(mateBase && readBase == refBase && mateBase == refBase) {
-
+      // printf("\nDEBUG: Case 3: Read pair overlap, readBase and mateBase both reference. QNAME=%s, tid=%d, pos=%ld, isize=%ld, core.pos=%ld, p->qpos=%d\n", bam_get_qname(p->b), p->b->core.tid, (p->b->core.pos + p->qpos), p->b->core.isize, p->b->core.pos, p->qpos);
       // First update read base to the mutant allele &
       // mark that it has been handled.
       bam_seqi_set(bam_get_seq(p->b),
@@ -816,6 +732,7 @@ void attemptToMutateBase(int pileupSize,
 
    // Case 4: Read pair overlap, readBase is reference, mateBase is not.
    else if(mateBase && readBase == refBase && mateBase != refBase) {
+      // printf("\nDEBUG: Case 4: Read pair overlap, readBase is reference, mateBase is not. QNAME=%s, tid=%d, pos=%ld, isize=%ld, core.pos=%ld, p->qpos=%d\n", bam_get_qname(p->b), p->b->core.tid, (p->b->core.pos + p->qpos), p->b->core.isize, p->b->core.pos, p->qpos);
 
       // First update read base to the mutant allele &
       // mark that it has been handled.
@@ -868,6 +785,7 @@ void attemptToMutateBase(int pileupSize,
 
    // Case 5: Read pair overlap, mateBase is reference, readBase is not.
    else if(mateBase && readBase != refBase && mateBase == refBase) {
+      // printf("\nDEBUG: Case 5: Read pair overlap, mateBase is reference, readBase is not. QNAME=%s, tid=%d, pos=%ld, isize=%ld, core.pos=%ld, p->qpos=%d\n", bam_get_qname(p->b), p->b->core.tid, (p->b->core.pos + p->qpos), p->b->core.isize, p->b->core.pos, p->qpos);
       // Pretty much the mirror image of Case 4.
 
       // First update mate base to the mutant allele &
@@ -921,6 +839,7 @@ void attemptToMutateBase(int pileupSize,
 
    // Case 6: Read pair overlap, both readBase and mateBase are not reference.
    else if(mateBase && readBase != refBase && mateBase != refBase) {
+      // printf("\nDEBUG: Case 6: Read pair overlap, both readBase and mateBase are not reference. QNAME=%s, tid=%d, pos=%ld, isize=%ld, core.pos=%ld, p->qpos=%d\n", bam_get_qname(p->b), p->b->core.tid, (p->b->core.pos + p->qpos), p->b->core.isize, p->b->core.pos, p->qpos);
       // Not much else to do other than flag the error.
 
       // Set VCF filter to MASKED_OVL
