@@ -252,7 +252,7 @@ groundTruthAlleleFrequenciesParseCommand="cat ../*.spike| awk %c{ print $4/2 }%c
 try({x = unlist(read.table(pipe(groundTruthAlleleFrequenciesParseCommand)));hist(x,xlim=c(0,1),breaks=100, main="Ground truth mutant allele frequencies", ylab="Number of mutations", xlab="Allele frequency")}, silent=TRUE)
 
 # Shell commands to parse out allele frequencies from VCF output.
-vcfAlleleFrequenciesParseCommand="gzip -cd *.filtered.vcf.gz | egrep -v %c^#%c | awk %c{if($7==\\"PASS\\" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) {split($9,format,\\":\\");split($11,formatContentsTumour,\\":\\"); for(i in format){formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print formatAttributesTumour[\\"AF\\"]} }%c"
+vcfAlleleFrequenciesParseCommand="gzip -cd *.filtered.vcf.gz | egrep -v %c^#%c | awk %c{if($7==\\"PASS\\" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) {split($9,format,\\":\\"); if(NF == 10) split($10,formatContentsTumour,\\":\\"); else split($11,formatContentsTumour,\\":\\"); for(i in format){formatAttributesTumour[format[i]]=formatContentsTumour[i]}; print formatAttributesTumour[\\"AF\\"]} }%c"
 
 x = unlist(read.table(pipe(vcfAlleleFrequenciesParseCommand)))
 hist(x,xlim=c(0,1),breaks=100, main="Mutant allele frequencies as estimted by Mutect2", ylab="Number of mutations", xlab="Allele frequency")
