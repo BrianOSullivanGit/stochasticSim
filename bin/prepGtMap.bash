@@ -28,7 +28,7 @@ if [ -z ${BEDTOOLS+xyz} ]; then BEDTOOLS=`which bedtools`; fi
 # (decision, yes, so no action..) 
 
 # Find target loci (loci of interest in the VCF for which we want fo pull out the ground truth) in haplotype 1.
-gzip -cd ${1} | egrep -v '^#' | awk -v liftoverFile="${2}" '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") print "${TWOWAYLIFTOVER} r "$1":"$2" "liftoverFile}' > tmp.cmds.$$
+gzip -cd ${1} | egrep -v '^#' | egrep '^chr[0-9]*[[:space:]]|^chr[XY][[:space:]]' | awk -v liftoverFile="${2}" '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") print "${TWOWAYLIFTOVER} r "$1":"$2" "liftoverFile}' > tmp.cmds.$$
 
 
 date | tr '\012' ':'
@@ -42,7 +42,7 @@ source tmp.cmds.$$ > targetsHap1.loci
 # Repeat for Haplotype 2.
 
 # Find target loci (loci of interest in the VCF for which we want fo pull out the ground truth) in haplotype 2.
-gzip -cd ${1} | egrep -v '^#' | awk -v liftoverFile="${3}" '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") print "${TWOWAYLIFTOVER} r "$1":"$2" "liftoverFile}' > tmp.cmds.$$
+gzip -cd ${1} | egrep -v '^#' | egrep '^chr[0-9]*[[:space:]]|^chr[XY][[:space:]]' | awk -v liftoverFile="${3}" '{if($4=="G" || $4=="C" || $4=="A" || $4=="T") if($5=="G" || $5=="C" ||$5=="A" || $5=="T") print "${TWOWAYLIFTOVER} r "$1":"$2" "liftoverFile}' > tmp.cmds.$$
 
 
 date | tr '\012' ':'
@@ -80,12 +80,6 @@ noCoverage=$((hap1NoCoverage+hap2NoCoverage))
 
 cat gtMapper.hap.ref |awk '{if($3=="PASS") print $0}' | cut -f 1,2,4-|egrep -v '(PASS|MASKED)' > fp.$$.list
 
-fpTotal=`wc -l fp.$$.list|cut -d' ' -f1`
-
-seqErrTotal=`grep SEQ_ERROR fp.$$.list | wc -l`
-
-alignmentIssue=`cat fp.$$.list|awk '{ if($4==".") if($5==".") if($6==".")if($8==".") if($9==".") if($10==".") print $0}' | wc -l`
-
 egrep -v '^#' ${4} ${5}| egrep 'PASS|MASK' > delme.$$
 
 totalNumSomaticsInSample=`wc -l delme.$$|cut -d' ' -f1`
@@ -108,53 +102,98 @@ Somatic Variant Calling:
 
 The caller detected (annotated as \"PASS\") %s SBS in its output.
 
-False Positives.
-%s sites were incorrectly labeled as true somatic SBSs by the caller.
-%s of these originated from incorrect base calls during the NGS process.
-%s originated from likely alignment issues post NGS.
+" "$burden" "$totalUndetected" "$noCoverage" "$totalNumSomaticsInSample" "$totalNumMaskedInSample" "$callerTotalPassed"
 
-" "$burden" "$totalUndetected" "$noCoverage" "$totalNumSomaticsInSample" "$totalNumMaskedInSample" "$callerTotalPassed" "$fpTotal" "$seqErrTotal" "$alignmentIssue"
+
 
 # If there are any false positives, produce a report.
 if [ -s fp.$$.list ]
  then
-   printf "A list of false positives (artefacts incorrectly annotated as \"PASS\" by Mutect2) is shown below.\n"
-   printf "NB: In the table, the true allele frequency in the haplotype (ie.,HAP[12]_true_AF) is twice
-what is observed in the final (diploid) sequencing data.
-This is because the final sequencing data is made up of sequencing data from both haplotypes combined together.\n\n"
-   printf "VCF_locus\tVCF_AF\tHAP1_locus\tHAP1_SBS\tHAP1_ground_truth\tHAP1_true_AF\tHAP2_locus\tHAP2_SBS\tHAP2_ground_truth\tHAP2_true_AF\n"
 
-   cat fp.$$.list
+
+   # Are we dealing with a tumour only VCF?
+   numVcfFields=`zcat  ${1}| egrep -m1 '^#CHROM' | wc -w`
+
+   # Only 10 fields in a VCF record means (in the context of somatic var. calling)  it's tumour only..
+   if [ $numVcfFields -eq 10 ]; then
+     # Tumour only.
+
+     # There's no matched normal here so there will be no normal_artifact filter.
+     # As a result there will be a tonne of germline false positives in the Mutect VCF output.
+     # It is not informative to include them all in the summary output.
+     # Just record the total and remove them from the list of false positives.
+     gzip -cd ${1} | awk 'BEGIN{print "##fileformat=VCFv4.2"}{if($7=="PASS" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) print $0 }' > $$.tmp.vcf
+     ${BEDTOOLS} intersect -a $$.tmp.vcf -b ${6} | awk '{print $1":"$2"\t"}' > n.a.tns.$$.lst
+     germlineFalsePositives=`cat n.a.tns.$$.lst|wc -l`
+     
+     # Print out the totals..
+     fpTotal=`wc -l fp.$$.list|cut -d' ' -f1`
+     seqErrTotal=`grep SEQ_ERROR fp.$$.list | egrep -v -f n.a.tns.$$.lst| wc -l`
+     alignmentIssue=`cat fp.$$.list|egrep -v -f n.a.tns.$$.lst|awk '{ if($4==".") if($5==".") if($6==".")if($8==".") if($9==".") if($10==".") print $0}' | wc -l`
+     printf "\n\nFalse Positives.\n%s sites were incorrectly labeled as true somatic SBSs by the caller.\n%s of these were probably caused by incorrect base calls during the NGS process.\n%s of the remaining total were most likely caused by alignment issues post NGS.\n%s were germline artefacts mistakenly classified as true somatic variants.\n" "$fpTotal" "$seqErrTotal" "$alignmentIssue" "$germlineFalsePositives"
+     printf "A list of false positives (artefacts incorrectly annotated as \"PASS\" by Mutect2) without the germline false positives, is shown below.\n"
+     printf "NB: In the table, the true allele frequency in the haplotype (ie.,HAP[12]_true_AF) is twice
+what is observed in the final (diploid) sequencing data.\nThis is because the final sequencing data is made up of sequencing data from both haplotypes combined together.\n\n"
+     printf "VCF_locus\tVCF_AF\tHAP1_locus\tHAP1_SBS\tHAP1_ground_truth\tHAP1_true_AF\tHAP2_locus\tHAP2_SBS\tHAP2_ground_truth\tHAP2_true_AF\n"
+     egrep -v -f n.a.tns.$$.lst  fp.$$.list
+
+     rm $$.tmp.vcf
+   else
+     # Tumour and matched normal.
+     # Remember, information about true negatives that are germline in origin and are filtered as
+     # normal_artifact will not be found in the ground truth map file.
+     # All germline information is recorded in the germline VCF file that was originally used to
+     # create the personalised reference etc. (for example HG00110.vcf).
+     # Most variants are obviously germline in origin are removed by Mutect2 without continuing through
+     # the filtering process or recording them in the VCF to save processing time.
+     # This significantly reduces the number of true negatives among variants listed as
+     # normal_artifact. However we still need to check here just in case if there are any and remove them
+     # from our normal_artifact false negative calculation.
+     #
+     # Get a list of germline origin normal_artifact true negatives and remove them from our false negatives list.
+     # We will use this later on below when printing out the false negative list.
+     gzip -cd ${1} | awk 'BEGIN{print "##fileformat=VCFv4.2"}{if($7=="normal_artifact" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) print $0 }' > $$.tmp.vcf
+     ${BEDTOOLS} intersect -a $$.tmp.vcf -b ${6} | awk '{print $1":"$2"\t"}' > n.a.tns.$$.lst
+     rm $$.tmp.vcf
+     
+     # Print out the totals..
+     fpTotal=`wc -l fp.$$.list|cut -d' ' -f1`
+     seqErrTotal=`grep SEQ_ERROR fp.$$.list | wc -l`
+     alignmentIssue=`cat fp.$$.list|awk '{ if($4==".") if($5==".") if($6==".")if($8==".") if($9==".") if($10==".") print $0}' | wc -l`
+     printf "\n\nFalse Positives.\n%s sites were incorrectly labeled as true somatic SBSs by the caller.\n%s of these were probably caused by incorrect base calls during the NGS process.\n%s of the remaining total were most likely caused by alignment issues post NGS.\n" "$fpTotal" "$seqErrTotal" "$alignmentIssue"
+     printf "A list of false positives (artefacts incorrectly annotated as \"PASS\" by Mutect2) is shown below.\n"
+     printf "NB: In the table, the true allele frequency in the haplotype (ie.,HAP[12]_true_AF) is twice
+what is observed in the final (diploid) sequencing data.\n
+This is because the final sequencing data is made up of sequencing data from both haplotypes combined together.\n\n"
+     printf "VCF_locus\tVCF_AF\tHAP1_locus\tHAP1_SBS\tHAP1_ground_truth\tHAP1_true_AF\tHAP2_locus\tHAP2_SBS\tHAP2_ground_truth\tHAP2_true_AF\n"
+
+     # Finally print out the list of false positives in the matched tumour normal VCF.
+     cat fp.$$.list
+   fi
+else
+   printf "\nThere were no false positives in the caller VCF output.\n"
 fi
 
-# Remember, information about true negatives that are germline in origin and are filtered as
-# normal_artifact will not be found in the ground truth map file.
-# All germline information is recorded in the germline VCF file that was originally used to
-# create the personalised reference etc. (for example HG00110.vcf).
-# Most variants are obviously germline in origin are removed by Mutect2 without continuing through
-# the filtering process or recording them in the VCF to save processing time.
-# This significantly reduces the number of true negatives among variants filtered as
-# normal_artifact. However we still need to check here just in case if there are any and remove them
-# from our normal_artifact false negative calculation.
-#
-# Get a list of of germline origin normal_artifact true negatives and remove them from the false negatives list.
-gzip -cd ${1} | awk 'BEGIN{print "##fileformat=VCFv4.2"}{if($7=="normal_artifact" && $4 ~ /^[GCAT]$/ && $5 ~ /^[GCAT]$/) print $0 }' > $$.tmp.vcf
-${BEDTOOLS} intersect -a $$.tmp.vcf -b ${6} | awk '{print $1":"$2"\t"}' > n.a.tns.$$.lst
-rm $$.tmp.vcf
+# Compile a report of filtered false negatives.
+cat gtMapper.hap.ref|awk '{if($3!="PASS") print $0}' | egrep '(PASS|MASK)'|  sed 's/\t[^\t]*;[^\t]*\t/\tmultiple_filter_failures\t/1' | ${DATAMASH} --sort  --group 3 count 3 >  delme.$$
 
-cat gtMapper.hap.ref|awk '{if($3!="PASS") print $0}' | egrep '(PASS|MASK)'| grep -v -f n.a.tns.$$.lst | sed 's/\t[^\t]*;[^\t]*\t/\tmultiple_filter_failures\t/1' | ${DATAMASH} --sort  --group 3 count 3 >  delme.$$
+if [ -s delme.$$ ]; then
+  totalFiltered=`cat delme.$$| ${DATAMASH} sum 2`
+else
+  totalFiltered="0"
+fi
 rm n.a.tns.$$.lst
-totalFiltered=`cat delme.$$| ${DATAMASH} sum 2`
+
 
 printf "
 False Negatives.
 
-%s true somatic SBSs picked up by NGS were not detected by the caller.
+%s true somatic SBSs were not detected by the caller.
 %s of these were incorrectly filetered as artifacts.
 A breakdown of number of filtered false negative SBSs per filter type is shown in the associated plot.
-The remainding true somatic SBSs were not listed in the caller VCF output.
+The remaining true somatic SBSs were not listed in the caller VCF output.
 
-" "$((burden - callerTotalPassed))" "$totalFiltered"
+" "$((burden + fpTotal - callerTotalPassed))" "$totalFiltered"
 
 filtr=`cut -f1 delme.$$ | sed -e 's/^/"/1' -e 's/$/",/1' | tr -d '\012' | sed -e 's/^/c(/1' -e 's/,$/)/1'`
 value=`cut -f2 delme.$$ | tr '\012' ',' | sed -e 's/^/c(/1' -e 's/,$/)/1'`
