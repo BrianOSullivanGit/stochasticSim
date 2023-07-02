@@ -1188,13 +1188,21 @@ int main(int argc,char* argv[])
       int errorAlleleCnt = 0;
       int mutAlleleCnt = 0;
       // Initialise mutant allele in case its required below.
-      // Btw., ref[pos] is the wt allele (/doner allele)
+      // Btw., ref[pos] is the wt allele (/donor allele)
       // that was at this at this locus prior to mutation.
       // The function returns mutantAllele, a random pick of one of the 3 other bases.
       // TODO!!!! take the one from the config file if there is one there.
-      // Otherwise go sith a random pick.
+      // Otherwise go with a random pick.
+ 
       char mutantAllele = selectMutantAllele(ref[pos]);
-
+            
+      if(nextTargetRegion.base == 'G' ||
+         nextTargetRegion.base == 'C' ||
+         nextTargetRegion.base == 'A' ||
+         nextTargetRegion.base == 'T' )
+         mutantAllele = nextTargetRegion.base;
+         
+      
       // Stores the counts of the various non-ref alleles encountered as we traverse up the pileup.
       ErrorAlleleDepths errorAlleleDepths[] = {{'G',0},{'C',0},{'A',0},{'T',0}};
       int numErrorAlleleTypes=sizeof(errorAlleleDepths)/sizeof(errorAlleleDepths[0]);
@@ -1291,6 +1299,7 @@ int main(int argc,char* argv[])
 
                char readBase,mateBase;
                int readBQ,mateBQ, mateIdx;
+                     
 
                // Are we in read pair overlap at this locus?
                // If so get the details plus the consensus for the base at this locus.
