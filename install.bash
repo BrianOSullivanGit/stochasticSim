@@ -185,6 +185,9 @@ ln -s ../${stochasticSimDirName}/bin/generatePhasedBams.bash bin/generatePhasedB
 ln -s ../${stochasticSimDirName}/bin/prepGtMap.bash bin/prepGtMap.bash
 ln -s ../${stochasticSimDirName}/bin/realignAndMerge.bash bin/realignAndMerge.bash
 ln -s ../${stochasticSimDirName}/bin/spikeIn.bash bin/spikeIn.bash
+ln -s ../${stochasticSimDirName}/bin/vcfAntex bin/vcfAntex
+ln -s ../${stochasticSimDirName}/bin/tncSpike bin/tncSpike
+ln -s ../${stochasticSimDirName}/bin/tncCountsProfile bin/tncCountsProfile
 
 echo "export CREATEDONORGENOME="`pwd`"/${stochasticSimDirName}/bin/createDonorGenome" >> bin/tool.path
 echo "export LIFTOVER="`pwd`"/${stochasticSimDirName}/bin/liftover" >> bin/tool.path
@@ -198,7 +201,9 @@ echo "export GENERATEPHASEDBAMS_BASH="`pwd`"/${stochasticSimDirName}/bin/generat
 echo "export PREPGTMAP_BASH="`pwd`"/${stochasticSimDirName}/bin/prepGtMap.bash" >> bin/tool.path
 echo "export REALIGNANDMERGE_BASH="`pwd`"/${stochasticSimDirName}/bin/realignAndMerge.bash" >> bin/tool.path
 echo "export SPIKEIN_BASH="`pwd`"/${stochasticSimDirName}/bin/spikeIn.bash" >> bin/tool.path
-
+echo "export VCFANTEX="`pwd`"/${stochasticSimDirName}/bin/vcfAntex" >> bin/tool.path
+echo "export TNCSPIKE="`pwd`"/${stochasticSimDirName}/bin/tncSpike" >> bin/tool.path
+echo "export TNCCOUNTSPROFILE="`pwd`"/${stochasticSimDirName}/bin/tncCountsProfile" >> bin/tool.path
 
 
 # Finally setup the reference, target bed and somatic variant caller that we will use in our toyExample.

@@ -1,9 +1,15 @@
 HTSLIB_static_LIBS := $(shell bash -c "grep HTSLIB_static_LIBS ${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION}/htslib_static.mk | sed -e 's/.* = //1'")
 
-all: stochasticSpike createDonorGenome liftover targetRef condenseLift gtMapper 2wayLiftover
+all: stochasticSpike tncSpike vcfAntex createDonorGenome liftover targetRef condenseLift gtMapper 2wayLiftover tncCountsProfile
 
 stochasticSpike: Makefile
 	cc -std=c99 -Wall -g -O2 -I${SAMTOOLS_BUILD_PATH} -I${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION} -I${SAMTOOLS_BUILD_PATH}/lz4  -o ./bin/stochasticSpike stochasticSpike.c ${SAMTOOLS_BUILD_PATH}/libst.a ${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION}/libhts.a ${HTSLIB_static_LIBS}
+
+tncSpike: Makefile
+	cc -std=c99 -Wall -g -O2 -I${SAMTOOLS_BUILD_PATH} -I${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION} -I${SAMTOOLS_BUILD_PATH}/lz4  -o ./bin/tncSpike tncSpike.c ${SAMTOOLS_BUILD_PATH}/libst.a ${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION}/libhts.a ${HTSLIB_static_LIBS}
+
+vcfAntex: Makefile
+	cc -std=c99 -Wall -g -O2 -I${SAMTOOLS_BUILD_PATH} -I${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION} -I${SAMTOOLS_BUILD_PATH}/lz4  -o ./bin/vcfAntex vcfAntex.c ${SAMTOOLS_BUILD_PATH}/libst.a ${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION}/libhts.a ${HTSLIB_static_LIBS}
 
 createDonorGenome: Makefile	
 	cc -std=c99 createDonorGenome.c -o ./bin/createDonorGenome
@@ -23,5 +29,8 @@ gtMapper: Makefile
 2wayLiftover: Makefile	
 	cc -std=c99 2wayLiftover.c -o ./bin/2wayLiftover
 
+tncCountsProfile: Makefile	
+	cc -std=c99 tncCountsProfile.c -o ./bin/tncCountsProfile
 clean:
-	rm ./bin/stochasticSpike ./bin/createDonorGenome ./bin/liftover ./bin/targetRef ./bin/condenseLift ./bin/gtMapper ./bin/2wayLiftover
+	rm ./bin/stochasticSpike ./bin/createDonorGenome ./bin/liftover ./bin/targetRef ./bin/condenseLift ./bin/gtMapper ./bin/2wayLiftover ./bin/tncSpike ./bin/vcfAntex ./bin/tncCountsProfile
+
