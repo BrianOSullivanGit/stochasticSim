@@ -1,6 +1,6 @@
-#!/opt/ohpc/pub/libs/gnu/R_base/3.3.3/bin/Rscript
+#!/usr/bin/Rscript
 
-# Plots the trinucleotide context (TNC) of DNA artifactual damage detected by Mutect2.
+# Plots the trinucleotide context (TNC) of Mutations or DNA artifactual damage detected by Mutect2.
 # Damage is either true negative (correctly filtered as orientation) or false positive (PASS).
 
 library(ggplot2)
