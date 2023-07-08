@@ -1,0 +1,5 @@
+# Comment / meta lines begining with at '#' are ignored by stochasticSpike
+#CHROM    POS    ALT    AF
+chr19	1000245    .	0.02
+chr19	1027823    .	0.268
+chr19	1675589    .	0.0411
