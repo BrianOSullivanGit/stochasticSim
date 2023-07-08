@@ -393,7 +393,7 @@ where,
 
 **DESCRIPTION**
 
-This binary spikes-in a set of somatic mutaions specified in a text config file into a single BAM files. The BAM file may be real or simulated. In real genomic sequencing data the observed number of reads containing the alternate allele is a random variable. This is also the case here. When using stochasticSpike to spike-in a variant, the probability of any given read at the target pileup picking up the synthetic alternate allele is taken as the true alternate allele frequency (to more accurately reflect the frequency profile of real tumour genomic sequencing data).
+This binary spikes-in a set of somatic mutaions specified in a text config file into a single BAM file. The BAM file may be real or simulated. In real genomic sequencing data the observed number of reads containing the alternate allele is a random variable. This is also the case here with stochasticSpike. When using stochasticSpike to spike-in a variant, the probability of any given read at the target pileup picking up the synthetic alternate allele is taken as the true alternate allele frequency (to more accurately reflect the frequency profile of real tumour genomic sequencing data). This binary is also called from spikeIn.bash to spike-in the required burden into each of the phased haplotype BAMs.
 
 For example,
 ```
@@ -403,11 +403,9 @@ $ ../bin/stochasticSpike T_X1_HG00110.chr21.exons_ranges_25x_76bp.bam \
                                  42 \
                                    T_X1_HG00110.chr21.exons_ranges_25x_76bp.spiked.sam
 ```
-Note that input BAM files must be indexed. Note that input BAM files must be indexed.
+Note that input BAM files must be indexed.
 
-The format of the somatic mutation config file is,
-
-Each line in the somatic mutation config file specifies a variant for spike-in, in tab separated format containing chromosome, target locus, alt. allele, allele frequency as per the example below. The file must be sorted in coordinate order prior to spike-in.
+Each line in the somatic mutation config file specifies a variant for spike-in, in tab separated format containing chromosome, target locus, alt. allele, allele frequency as per the example below. The file must be sorted in coordinate order prior to spike-in. An example of a simple somatic mutation config file is shown below.
 
 ```
 #CHROM    POS    ALT    AF
