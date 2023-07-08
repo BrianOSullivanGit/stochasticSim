@@ -369,6 +369,52 @@ Note that input BAM files must be indexed. This command will output the followin
 | tumour hap 1 index | Tumour BAM (from haplotype 1) index. |
 | tumour hap 2 index| Tumour BAM (from haplotype 2) index. |
 
+### stochasticSpike
+**SYNOPSIS**
+
+The format is,
+
+```
+$ stochasticSpike <donor BAM> \
+                     <donor reference> \
+                         <somatic mutation config file> \
+                             <seed> \
+                                 <output SAM filename>
+```
+where,
+| Argument | Description |
+| --- | --- |
+| donor BAM | A pretumour donor BAM you want to spike into. |
+| donor reference | The reference fasta file for that BAM. |
+| somatic mutation config file | A text config file specifying the mutations you want to spike-in (format explained below). |
+| seed | Spike-in is stochastic. If you want the exact same reads and read fractions as a previous run set this seed. Otherwise the number of reads supporting the alternate allele will be a random variable from the true allele frequency you specified in the spike-in config file. |
+| output SAM filename | The output alignment containing the spiked-in distribution. |
+
+
+**DESCRIPTION**
+
+This binary spikes-in a set of somatic mutaions specified in a text config file into a single BAM file. The BAM file may be real or simulated. In real genomic sequencing data the observed number of reads containing the alternate allele is a random variable. This is also the case here with stochasticSpike. When using stochasticSpike to spike-in a variant, the probability of any given read at the target pileup picking up the synthetic alternate allele is taken as the true alternate allele frequency (to more accurately reflect the frequency profile of real tumour genomic sequencing data). This binary is also called from spikeIn.bash to spike-in the required burden into each of the phased haplotype BAMs.
+
+For example,
+```
+$ ../bin/stochasticSpike T_X1_HG00110.chr21.exons_ranges_25x_76bp.bam \
+                           X1_HG00110.chr21.exons_ranges.fa \
+                              X1_HG00110.chr21.example.spike \
+                                 42 \
+                                   T_X1_HG00110.chr21.exons_ranges_25x_76bp.spiked.sam
+```
+Note that input BAM files must be indexed.
+
+Each line in the somatic mutation config file specifies a variant for spike-in, in tab separated format containing chromosome, target locus, alt. allele, allele frequency as per the example below. The file must be sorted in coordinate order prior to spike-in. An example of a simple somatic mutation config file is shown below and included in the toyExample directory (simple.spike).
+
+```
+# Comment / meta lines begining with at '#' are ignored by stochasticSpike
+#CHROM    POS    ALT    AF
+chr19	1000245    .	0.02
+chr19	1027823    .	0.268
+chr19	1675589    .	0.0411
+```
+
 ### realignAndMerge.bash
 **SYNOPSIS**
 
