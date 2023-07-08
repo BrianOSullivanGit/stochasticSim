@@ -405,9 +405,10 @@ $ ../bin/stochasticSpike T_X1_HG00110.chr21.exons_ranges_25x_76bp.bam \
 ```
 Note that input BAM files must be indexed.
 
-Each line in the somatic mutation config file specifies a variant for spike-in, in tab separated format containing chromosome, target locus, alt. allele, allele frequency as per the example below. The file must be sorted in coordinate order prior to spike-in. An example of a simple somatic mutation config file is shown below.
+Each line in the somatic mutation config file specifies a variant for spike-in, in tab separated format containing chromosome, target locus, alt. allele, allele frequency as per the example below. The file must be sorted in coordinate order prior to spike-in. An example of a simple somatic mutation config file is shown below and included in the toyExample directory (simple.spike).
 
 ```
+# Comment / meta lines begining with at '#' are ignored by stochasticSpike
 #CHROM    POS    ALT    AF
 chr19	1000245    .	0.02
 chr19	1027823    .	0.268
