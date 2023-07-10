@@ -453,6 +453,129 @@ This command will output the following file,
 | \<output BAM prefix\>.bam | Tumour BAM with burden spiked in and aligned against standard reference |
 | \<output BAM prefix\>.bam.bai | Corresponding tumour BAM index |
 
+
+### tncSpike
+**SYNOPSIS**
+
+The format is,
+
+```
+$ cat <list of loci> | tncSpike <total burden> \
+                                  <TNC profile> \
+                                    <reference fasta>
+```
+where,
+| Argument | Description |
+| --- | --- |
+| total burden | The total number of variants to spike into. |
+| TNC profile | The percentages of the overall burden that fall within each context. |
+| reference fasta | reference fasta. |
+
+
+**DESCRIPTION**
+
+The tncSpike binary is used to create the required context specific spike-in config file (for use with stochasticSpike). The required burden (specified in total number of variants), trinucleotide context profile (specifying the percentages of that burden that fall within each context) and reference fasta file corresponding to that burden are supplied as command line arguments. tncSpike reads a set of target loci from the stdin while creating the spike-in config file. If a locus falls within the trinucleotide context of a burden required for spike-in a record is generated for that locus together with the required SBS in the spike-in config output file and the outstanding burden for that context is decremented. Generally tncSpike is fed a random set of loci from the target region (to ensure burden is randomly distributed but within the required contexts). The spike-in burden is strand specific, ie., it creates two separate config files, one relating to burden for inserts that align to the forward genomic strand, the other for inserts aligned to the reverse. You will need to match the output config files up with a set of allele frequencies and sort them in coordinate order before they can be used to spiked-into a BAM file with stochasticSpike.
+
+Example usage is shown below. The first two lines generate a random set of loci from the target (typically 3 times what you need for the burden you require). tncSpike then generates the loci and SBSs required. You match these up with your required set of allele frequencies, sort in coordinate order and then spike them in (stochasticSpike).
+
+```
+$ zcat X2_HG00110_WEX.sorted.merged.bed.gz | awk '{ i=$2; while(i!=$3) {print $1"\t"i+1;i++} }' | \
+  shuf -n 2000000 | \
+  tncSpike 500000 ffpe.tnc.profile.txt X2_HG00110.WEX.fa
+```
+
+This binary  stores its output in two text files, fwd.targetLoci.txt and rev.targetLoci.txt containing target SBSs relating to inserts aligning to the forward and reverse strands respectively.
+
+### vcfAntex
+**SYNOPSIS**
+
+The format is,
+
+```
+$ vcfAntex <reference fasta> \
+               <VCF file>
+```
+where,
+| Argument | Description |
+| --- | --- |
+| reference fasta | reference fasta. |
+| VCF file | VCF file |
+
+
+
+**DESCRIPTION**
+
+The vcfAntex binary annotates SBSs records in a VCF with trinucleotide context information at the end of the INFO field (field 8). The annotated output is written to the stdout.
+
+Example usage is shown below. 
+```
+$ vcfAntex ffpe.vcf ../Reference/GRCh37-lite.fa > ffpe.anno.vcf
+```
+
+### tncCountsProfile
+**SYNOPSIS**
+
+The format is,
+
+```
+$ tncCountsProfile <target fasta>
+
+```
+where,
+| Argument | Description |
+| --- | --- |
+| target fasta | fasta covering targeted region only |
+
+
+
+**DESCRIPTION**
+
+The tncCountsProfile binary provides the total number of mutational opportunities within each trinucleotide sequence context in the fasta file provided. It is used to normalise totals between target regions. The totals provided are not strand specific, ie., the total for context ACC is listed as the number of ACC kmers found in the fasta provided plus the number of times its reverse complement GGT is found also. The totals are written to the stdout.
+
+Example usage is shown below. 
+```
+$ tncCountsProfile targetedRegionsPrentenceEtAl2018.fa > tnc.crstudy.panel.totals.txt
+```
+
+### tncPlot.bash
+**SYNOPSIS**
+
+The format is,
+
+```
+$ tncPlot.bash <a list of SBS TNCs>
+```
+where,
+| Argument | Description |
+| --- | --- |
+| a list of SBS TNCs | a list of every trinucleotide sequence context at the 5' and 3' of a single base substitution. |
+
+
+**DESCRIPTION**
+
+This file is actually an R script (not bash). The name is misleading, however the file is called from a number of other scripts so a name change would mean updating a number of other files also. This script plots the mutational profile with 96 base substitution types (in COSMIC format) corresponding to the mutational list supplied. You will need R with ggplot to run it. It expects Rscript to be located at /usr/bin/Rscript. If it is somewhere different on your system you will need to modify the script for it to work. The list of SBS contexts is specifies, for example as follows,
+
+```
+C[C>A]C
+C[C>A]C
+C[C>A]T
+A[T>C]T
+C[C>A]A
+C[C>A]T
+  :
+  :
+```
+
+Example usage: You can create the list of SBS contexts from a VCF, for example by annotating it with vcfAntex (above) and then parsing out the context information only, after which you can create the plot, ie.,
+
+```
+cat ffpe.anno.vcf | grep 'TNC=' | sed 's/.*TNC=//1' > my.context.lst
+tncPlot.bash my.context.lst
+```
+
+The output plot has the same name as the SBS contexts file with ".pdf" appended.
+
+
 ### xxx.bash
 **SYNOPSIS**
 
