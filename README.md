@@ -262,7 +262,7 @@ This (binary) converts the liftover*.txt files created by the previous command t
 The format is,
 
 ```
-$ ../bin/condenseLift \<large format liftover file\>
+$ ../bin/condenseLift <large format liftover file>
 
 ```
 where,
