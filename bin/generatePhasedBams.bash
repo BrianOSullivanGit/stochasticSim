@@ -28,14 +28,23 @@ hap2RefPrefix=`echo ${2} | sed -e 's/.*\///1' -e 's/\.fa$//1'`
 # update command line switches below accordingly.
 date | tr '\012' ':'
 echo " Simulating phased reads for pre-tumour sample.."
-${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap1RefPrefix}_${6}"  || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }
-#${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} -c ${4} -m ${5} -s 10 -o "T_${hap1RefPrefix}_${6}"
+
+if [ $# -eq 8 ]
+  then
+    ${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap1RefPrefix}_${6}" -1 ${7} -2 ${8}  || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }
+  else    
+    ${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap1RefPrefix}_${6}"  || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }  
+fi
 
 # Remove the paired end fastq files, we won't need those.
 rm T_${hap1RefPrefix}_${6}[12].fq
 
-${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap2RefPrefix}_${6}" || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }
-#${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} -c ${4} -m ${5} -s 10 -o "T_${hap2RefPrefix}_${6}"
+if [ $# -eq 8 ]
+  then
+    ${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap2RefPrefix}_${6}" -1 ${7} -2 ${8} || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }
+  else    
+    ${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "T_${hap2RefPrefix}_${6}" || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }  
+fi
 
 # Again, remove redundant paired end fastq files.
 rm T_${hap2RefPrefix}_${6}[12].fq
@@ -67,14 +76,26 @@ rm [TN]_*_${6}*.sam
 
 date | tr '\012' ':'
 echo " Simulating phased reads from normal sample.."
-${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} ${4} -m ${5} -s 10 -o "N_${hap1RefPrefix}_${6}" || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }
+
+if [ $# -eq 8 ]
+  then
+    ${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} ${4} -m ${5} -s 10 -o "N_${hap1RefPrefix}_${6}" -1 ${7} -2 ${8} || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }
+  else    
+    ${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} ${4} -m ${5} -s 10 -o "N_${hap1RefPrefix}_${6}" || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }  
+fi
+
+
 #${READ_SIMULATOR} -na -sam -i ${1} -p -l ${3} -c ${4} -m ${5} -s 10 -o "N_${hap1RefPrefix}_${6}"
 
 # Remove the paired end fastq files, we won't need those.
 rm N_${hap1RefPrefix}_${6}[12].fq
 
-${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "N_${hap2RefPrefix}_${6}" || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }
-#${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} -c ${4} -m ${5} -s 10 -o "N_${hap2RefPrefix}_${6}"
+if [ $# -eq 8 ]
+  then
+    ${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "N_${hap2RefPrefix}_${6}" -1 ${7} -2 ${8} || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; }
+  else    
+    ${READ_SIMULATOR} -na -sam -i ${2} -p -l ${3} ${4} -m ${5} -s 10 -o "N_${hap2RefPrefix}_${6}" || { echo -e "\n\033[7mREAD SIMULATION failed! \033[0m" 1>&2;exit 1; } 
+fi
 
 # Remove the paired end fastq files, we won't need those.
 rm N_${hap2RefPrefix}_${6}[12].fq
