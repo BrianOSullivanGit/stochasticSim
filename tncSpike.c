@@ -13,7 +13,7 @@
 #include "hts_internal.h"
 
 #define BUF_SIZE 1024
-#define NUM_TNC_TYPES 96
+#define NUM_TNC_TYPES 256
 
 typedef struct {
    char context[4]; // The target base before substitution plus one adjacent base, either side, forward genomic strand.
