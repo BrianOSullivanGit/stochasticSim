@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <htslib/faidx.h>
 #include "hts_internal.h"
 
@@ -26,8 +27,10 @@ typedef struct {
 
 int main(int argc,char* argv[])
 {
-   if(!(argc >= 3))
+   if(!(argc >= 3)) {
       fprintf(stderr, "\nMissing SBS signature profile (second arg).\n");
+      exit(EXIT_FAILURE);
+   }
 
    long totalBurden=atol(argv[1]);
 
@@ -37,11 +40,10 @@ int main(int argc,char* argv[])
       exit(EXIT_FAILURE);
    }
 
-
    faidx_t *fai = fai_load(argv[3]);  // Reference sequence
    if(fai==NULL) {
       fprintf(stderr,"Can't load faidx: %s\n", argv[3]);
-      exit(-1);
+      exit(EXIT_FAILURE);
    }
 
    FILE *fwdFp = fopen("fwd.targetLoci.txt", "w");
@@ -60,7 +62,6 @@ int main(int argc,char* argv[])
    TargetBurdenElement targetCtxBurdenArray[NUM_TNC_TYPES];
 
    int ctxIdx=0;
-
 
 
    // First read the SBS signature file and work out how much burden we need
@@ -96,8 +97,6 @@ int main(int argc,char* argv[])
       // TNC.
       pch = strtok(line,"\t");
       if(pch != NULL) {
-         //  printf(">>>%s<<<\n",pch);
-
 
          targetCtxBurdenArray[ctxIdx].context[0]=pch[0];
          targetCtxBurdenArray[ctxIdx].context[0]=pch[0];
@@ -139,9 +138,6 @@ int main(int argc,char* argv[])
          else if(targetCtxBurdenArray[ctxIdx].substitution=='C')
             targetCtxBurdenArray[ctxIdx].substitutionPrime='G';
 
-         // printf("HERE1111: %s > %c.\n",targetCtxBurdenArray[ctxIdx].context,targetCtxBurdenArray[ctxIdx].substitution);
-         // printf("HERE2222: %s > %c.\n",targetCtxBurdenArray[ctxIdx].contextPrime,targetCtxBurdenArray[ctxIdx].substitutionPrime);
-
       }
 
       // Burden fraction in this context.
@@ -158,7 +154,13 @@ int main(int argc,char* argv[])
       }
    }
 
-   tncArraySize=ctxIdx+1;
+   tncArraySize=ctxIdx;
+
+   // Debug
+   // printf("\n\nSTART>>>>%ld<<<<here\n\n",tncArraySize);
+   // for(int i=0; i<tncArraySize; i++) {
+   //   printf("%s => %d\n",targetCtxBurdenArray[i].context,targetCtxBurdenArray[i].targetBurden);
+   // }
 
    // Now read the set of random loci from the stdin and spike in as required.
    hts_pos_t beg;
@@ -203,61 +205,27 @@ int main(int argc,char* argv[])
       }
       else {
          // Check if a mutation within this context is required?
-         int burdenCompleteCount=0;
+
          for(int i=0; i<tncArraySize; i++) {
-            // If we've finished creating mutation records for this context then continue..
-            if(!targetCtxBurdenArray[i].targetBurden) {
-               if(i==0)
-                  burdenCompleteCount=0;
-               else
-                  burdenCompleteCount++;
 
-               if(burdenCompleteCount==95) {
-                  // We're done!! Don't hang around, exit..
-                  fprintf(stderr, "Target burden hit...Bye!\n");
-                  fflush(fwdFp);
-                  fflush(revFp);
-                  fclose(fwdFp);
-                  fclose(revFp);
-                  exit(0);
-               }
-
-               continue;
-            }
-
-            if(!strncmp(targetCtxBurdenArray[i].context, fai_ref, 3)) {
-
-               //    if((beg+2)==924769 || (beg+1)==924769 || (beg)==924769)
-               //    {
-               // Context found on forward genomic strand.
-               //       fprintf(stderr, "%s\t%ld\ti=%d\tURHERE Found \"%c%c%c\" on forward strand with \"%s\" with substitution %c>%c (%ld SBSs remaining).\n",contigPtr,beg+2,i, fai_ref[0],fai_ref[1],fai_ref[2],targetCtxBurdenArray[i].context, fai_ref[1],targetCtxBurdenArray[i].substitution,targetCtxBurdenArray[i].targetBurden);
-
-               //      }
-
-
-               //printf("%c%c%c\n",fai_ref[0],fai_ref[1],fai_ref[2]);
+            if(!strncmp(targetCtxBurdenArray[i].context, fai_ref, 3) && targetCtxBurdenArray[i].targetBurden) {
 
                // Print out spike-in record for the config and adjust remaing burden total.
                // Adjust the target pointer. With htslib we are working off zero base.
                // However the spike-in config must be in one base.
                fprintf(fwdFp,"%s\t%ld\t%c\n",contigPtr,beg+2,targetCtxBurdenArray[i].substitution);
-               // fprintf(stderr, "Found \"%c%c%c\" on forward strand with \"%s (%s)\" with substitution %c>%c (%ld SBSs remaining).\n", fai_ref[0],fai_ref[1],fai_ref[2],targetCtxBurdenArray[i].context, targetCtxBurdenArray[i].context, fai_ref[1],targetCtxBurdenArray[i].substitution,targetCtxBurdenArray[i].targetBurden);
-
                targetCtxBurdenArray[i].targetBurden--;
 
                break;
 
             }
 
-            else if(!strncmp(targetCtxBurdenArray[i].contextPrime, fai_ref, 3)) {
-               // Context found on reverse genomic strand.
-               // fprintf(stderr, "Found \"%c%c%c\" on reverse strand with \"%s (%s)\" with substitution %c>%c (%ld SBSs remaining).\n", fai_ref[0],fai_ref[1],fai_ref[2],targetCtxBurdenArray[i].context, targetCtxBurdenArray[i].contextPrime, fai_ref[1],targetCtxBurdenArray[i].substitutionPrime,targetCtxBurdenArray[i].targetBurden);
+            else if(!strncmp(targetCtxBurdenArray[i].contextPrime, fai_ref, 3) && targetCtxBurdenArray[i].targetBurden) {
 
                // Print out spike-in record for the config and adjust remaing burden total.
                // Adjust the target pointer. With htslib we are working off zero base.
                // However the spike-in config must be in one base.
                fprintf(revFp,"%s\t%ld\t%c\n",contigPtr,beg+2,targetCtxBurdenArray[i].substitutionPrime);
-               //printf("i=%d, REF=>\"%c%c%c\"\t%s\t%ld\t%s -> %c\n",i,fai_ref[0],fai_ref[1],fai_ref[2], contigPtr,beg+1,&(targetCtxBurdenArray[i].contextPrime[0]), targetCtxBurdenArray[i].substitutionPrime);
                targetCtxBurdenArray[i].targetBurden--;
 
                break;
@@ -265,9 +233,33 @@ int main(int argc,char* argv[])
 
          }
 
+         // Flag to check if burden remaining when we are through the loop.
+         bool burdenRemaining = false;
+         // Are we finished? Is there any burden left that we need to create a spike in record for?
+         for(int i=0; i<tncArraySize; i++) {
+            // If we've finished creating mutation records for this context then continue..
+            if(targetCtxBurdenArray[i].targetBurden) {
+               burdenRemaining=true;
+               break;
+            }
+         }
+
+         // If we've finished creating mutation records exit..
+         if(!burdenRemaining) {
+            // We're done!! Don't hang around, exit..
+            fprintf(stderr, "Target burden hit...Bye!\n");
+            fflush(fwdFp);
+            fflush(revFp);
+            fclose(fwdFp);
+            fclose(revFp);
+
+            // Debug
+            // for(int i=0; i<tncArraySize; i++) {
+            //   printf("%s => %ld\n",targetCtxBurdenArray[i].context,targetCtxBurdenArray[i].targetBurden);
+            // }
+            exit(0);
+         }
       }
-
-
    }
    // Did we cover all the burden required by the SBS signature profile input file?
    for(int i=0; i<tncArraySize; i++) {
@@ -276,6 +268,13 @@ int main(int argc,char* argv[])
          fflush(NULL);
          fclose(fwdFp);
          fclose(revFp);
+
+         // Debug
+         // printf("\n\nEND>>>>%ld<<<<\n\n",tncArraySize);
+         // for(int x=0; x<tncArraySize; x++) {
+         //   printf("%s => %ld\n",targetCtxBurdenArray[x].context,targetCtxBurdenArray[x].targetBurden);
+         // }
+
          exit(1);
       }
    }
