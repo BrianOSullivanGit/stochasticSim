@@ -220,6 +220,29 @@ Genomic alterations that require a set of somatic variants to be phased together
 | INSERTION SEQUENCE | The nucleotide sequence representing the DNA that is inserted at the target locus (after any deletion, if required) as a result of the mutation. |
 | MUTANT ALLELE FREQ | The true mutant allele frequency. |
 
+A couple of examples using the BAM file for haplotype 1 that is created as part of the toy example are shown below.
+
+### Phased insertion, deletion, and substitution within a 29bp segment on chromosome 19
+
+Using the reference, examine the section of DNA that will contain this modification.
+```
+$ cd <toy example directory>
+$ samtools faidx X1_HG00110.chr19_500KB.fa chr19:10000037-10000066
+>chr19:10000037-10000066
+GTGAGCCACTGCCCCCGGCCCAGGGGGAGC
+```
+
+Edit the sequence to include any alterations (insertions, deletions or base substitutions) required. The original and modified sequence used in this example are shown below.  Base substitutions are shown in red and deleted bases greyed out.
+
+${\texttt{
+{\color{black}GTGAGCCACTGCCCCCGGCCCAGGGGGAGC}}}$
+
+${\texttt{
+{\color{red}GT}{\color{black}GAGCCACTGCCC{\color{red}T}CGGCCCAGGGGGA{\color{grey}GC}}}}$
+
+
+
+
 ![indel_pileup](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/25b32c46-eb26-490d-9e9e-0b81ddf828d5)
 
 ## List of stochasticSim commands and their formats
