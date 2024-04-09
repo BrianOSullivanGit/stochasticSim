@@ -216,8 +216,8 @@ Genomic alterations that require a set of somatic variants to be phased together
 | --- | --- |
 | CHROMOSOME | The chromosome/contig that contains the target mutation. |
 | TARGET LOCUS | The locus where the mutation starts. |
-| DELETION LENGTH | The number of nucleotides after the target locus removed as a result of the mutation. |
-| INSERTION SEQUENCE | The nucleotide sequence representing the DNA that is inserted at the target locus (after any deletion, if required) as a result of the mutation. |
+| DELETION LENGTH | The number of nucleotides after the target locus removed as a result of the mutation. Set to zero if no bases deleted. |
+| INSERTION SEQUENCE | The nucleotide sequence representing the DNA that is inserted at the target locus (after any deletion, if required) as a result of the mutation. Set to the '-' character if no bases inserted. |
 | MUTANT ALLELE FREQ | The true mutant allele frequency. |
 
 A couple of examples using the BAM file for haplotype 1 that is created as part of the toy example are shown below.
@@ -228,19 +228,23 @@ Using the reference, examine the section of DNA that will contain this modificat
 ```
 $ cd <toy example directory>
 $ samtools faidx X1_HG00110.chr19_500KB.fa chr19:10000037-10000066
->chr19:10000037-10000066
-GTGAGCCACTGCCCCCGGCCCAGGGGGAGC
+>chr19:10000037-10000065
+GTGAGCCACTGCCCCCGGCCCAGGGGGAG
 ```
 
 Edit the sequence to include any alterations (insertions, deletions or base substitutions) required. The original and modified sequence used in this example are shown below.  Base substitutions are shown in red and deleted bases greyed out.
 
 ${\texttt{
-{\color{black}GTGAGCCACTGCCCCCGGCCCAGGGGGAGC}}}$
+{\color{black}GTGAGCCACTGCCCCCGGCCCAGGGGGAG}}}$
 
 ${\texttt{
-{\color{red}GT}{\color{black}GAGCCACTGCCC{\color{red}T}CGGCCCAGGGGGA{\color{grey}GC}}}}$
+{\color{red}AC}{\color{black}GAGCCACTGCCC{\color{red}T}CGGCCCAGGGGG{\color{grey}AG}}}}$
 
+The corresponding entry in the config file for this variant at 0.25 allele frequency is,
 
+${\texttt{
+{\color{black}
+chr19	10000037	ACGAGCCACTGCCCTCGGCCCAGGGGG	29	0.25}}}$
 
 
 ![indel_pileup](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/25b32c46-eb26-490d-9e9e-0b81ddf828d5)
