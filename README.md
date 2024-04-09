@@ -4,16 +4,19 @@
 
 This framework accounts for the random nature of genomic sequencing to accurately reflect the frequency profile captured in real tumour genomic sequencing data. The ground truth associated with the simulation output is recorded for every non-reference locus in the data. Every record in the VCF output by the caller (either PASS or filtered) is mapped back to its true location in the phased personalised donor record to definitively identify false positives / negatives and their causes.
 
+
 **NOTE**:  If you are looking for specific simulation details and output associated with the manuscript **"Comprehensive and realistic simulation of tumour genomic sequencing data"** please refer to the following link, https://github.com/BrianOSullivanGit/Somatic_AF_Spectra 
 
 Contact BrianOSullivan@yahoo.com with questions.
 
 ## Table of contents<!-- omit in toc -->
+
 - [If you are in a hurry..](#if-you-are-in-a-hurry)
 - [System requirements](#system-requirements)
 - [Installation](#installation)
 - [Getting started](#getting-started)
-- [Understanding simulation output](#understanding-simulation-output)
+- [Understanding simulation output single base substitutions](#understanding-simulation-output-single-base-substitutions)
+- [Complex genomic rearrangements](#complex-genomic-rearrangements)
 - [List of stochasticSim commands and their format](#list-of-stochasticsim-commands-and-their-formats)
 
 
@@ -112,7 +115,7 @@ Depending on your hardware this will take about 8 minutes to run.
 The sequencing data used with this framework is simulated from phased, personalised reference files containing all germline SNV and indels variation from a real donor (HG00110, from the 1000 genomes project, in the toy example included). This is achieved by creating two personalised reference fasta files, each notionally corresponding to the maternal and paternal set of chromosomes, based on the donor's phased germline VCF. These fasta files are then used to simulate two BAM files using the ART read simulator (configured with default empirical error profile and corresponding to 50x depth of coverage in total, for the toy example). In the case of the simulated tumour sample, these BAMs are used as a base to spike in a set of somatic variants at the required loci and true allele frequencies. The BAMs are then realigned against the standard reference and merged before input to the somatic variant calling pipeline of interest. At each stage in the process, information is recorded about the source and location of every non reference site as it arises in the data. This information is critical in evaluating variant caller output at the end of this process. The files that store this information and the format used is outlined in the next section.
 
 
-## Understanding simulation output
+## Understanding simulation output single base substitutions
 Look at `<install path>/stochasticSimFramework/stochasticSim-main/toyExample/MUTECT` for the simulations results.
 Along with the variant caller output, this directory will contain the following files
 
@@ -205,6 +208,19 @@ As the name suggests the example included with this framework is a toy example. 
 - To keep things simple the **tumour purity** (a.k.a. cellularity) in the toy example is set at 100%. To simulate a different tumour purity simply multiply the spike-in frequencies (in .spike config file) by the tumour purity, expressed as a fraction. For example, for 75% tumour purity, `awk -v tumourPurity=0.75 '{ print $1"\t"$2"\t"$3"\t"($4*tumourPurity) }' chr19_500KB.h1.854mutMB.spike > chr19_500KB.h1.854mutMB.0.75purity.spike # Repeat for h2` Once you have created new configs for both haplotypes, re-run the spike-in, realignment and calling stages of the pipeline to complete the simulation. Please **do not try to adjust by multiplying the allele frequencies estimated by the caller by the purity** as to do so would give you a false and inflated impression of the caller's capability to detect low frequency somatic variants. Instead adjust the spike-in frequencies and re-run the required simulation stages as stated.
 - For more extensive simulations using this framework have a look at the github detailing **methods used in the publication** associated with this framework ([https://github.com/BrianOSullivanGit/Somatic_AF_Spectra](https://github.com/BrianOSullivanGit/Somatic_AF_Spectra)) or contact BrianOSullivan@yahoo.com .
 
+## Complex genomic rearrangements
+
+Genomic alterations that require a set of somatic variants to be phased together on the same maternal or paternal haplotype or sequence insertion / deletions are implemented using the stochasticIndel tool. Each rearrangement is specified in coordinate order in a config file according to the following format.
+
+| Field Name | Description |
+| --- | --- |
+| CHROMOSOME | The chromosome/contig that contains the target mutation. |
+| TARGET LOCUS | The locus where the mutation starts. |
+| DELETION LENGTH | The number of nucleotides after the target locus removed as a result of the mutation. |
+| INSERTION SEQUENCE | The nucleotide sequence representing the DNA that is inserted at the target locus (after any deletion, if required) as a result of the mutation. |
+| MUTANT ALLELE FREQ | The true mutant allele frequency. |
+
+![indel_pileup](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/25b32c46-eb26-490d-9e9e-0b81ddf828d5)
 
 ## List of stochasticSim commands and their formats
 
