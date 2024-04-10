@@ -248,7 +248,7 @@ chr19	10000037	ACGAGCCACTGCCCTCGGCCCAGGGGG	29	0.25}}}$
 
 This entry deletes 29 base pairs starting from the target locus and replaces them with the sequence specified in field 3 of the config record above. A random sample of 0.25 of all alignments that intersect the 29bp deleted region will be impacted. The effect on the pileup across this region is shown below. Bases impacted by this genomic alteration are highlighted in red. Once the mutation has been spiked in reads from both haplotypes are combined and realigned against the standard reference for downstream processing.
 
-![pileupEx1](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/6e2c958b-ef30-40d0-8b75-b7db694e1965)
+![pileupEx1](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/3f039391-ee17-4c36-a084-987941f795ca)
 
 
 ## List of stochasticSim commands and their formats
