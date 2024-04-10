@@ -215,12 +215,12 @@ Genomic alterations that require a set of somatic variants to be phased together
 | Field Name | Description |
 | --- | --- |
 | CHROMOSOME | The chromosome/contig that contains the target mutation. |
-| TARGET LOCUS | The locus where the mutation starts. |
-| DELETION LENGTH | The number of nucleotides after the target locus removed as a result of the mutation. Set to zero if no bases deleted. |
+| TARGET LOCUS | This locus identifies the first base modified as part of the mutation. |
+| DELETION LENGTH | The number of nucleotides after the target locus removed as a result of the mutation. The deletion length is typically chosen as the distance between the first modified base and the last modified base in the genomic alteration. Set to zero if no bases deleted. |
 | INSERTION SEQUENCE | The nucleotide sequence representing the DNA that is inserted at the target locus (after any deletion, if required) as a result of the mutation. Set to the '-' character if no bases inserted. |
 | MUTANT ALLELE FREQ | The true mutant allele frequency. |
 
-A couple of examples using the BAM file for haplotype 1 that is created as part of the toy example are shown below.
+Any sequence errors encountered by stochasticIndel while spiking in the modification, in the form of reference skips or base substitutions, are left unaltered at the location within the read where they occur. If, by chance, a sequence error corresponds to the base being spiked as part of the modification, then the contents at that locus are set to a different base to maintain a sequence error at that location. Some examples using the BAM file for haplotype 1 that is created as part of the toy example are shown below.
 
 ### Phased insertion, deletion, and substitution within a 29bp segment on chromosome 19
 
@@ -245,6 +245,8 @@ The corresponding entry in the config file for this variant at 0.25 allele frequ
 ${\texttt{
 {\color{black}
 chr19	10000037	ACGAGCCACTGCCCTCGGCCCAGGGGG	29	0.25}}}$
+
+This entry deletes 29 base pairs starting from the target locus and replaces them with the sequence specified in field 3. A random sample of 0.25 of all alignments that intersect the 29bp deleted region will be impacted.
 
 
 ![indel_pileup](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/25b32c46-eb26-490d-9e9e-0b81ddf828d5)
