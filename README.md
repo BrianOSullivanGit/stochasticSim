@@ -222,7 +222,7 @@ Genomic alterations that require a set of somatic variants to be phased together
 
 Any sequence errors encountered by stochasticIndel while spiking in the modification, in the form of reference skips or base substitutions, are left unaltered at the location within the read where they occur. If, by chance, a sequence error corresponds to the base being spiked as part of the modification, then the contents at that locus are set to a different base to maintain a sequence error at that location. Some examples using the BAM file for haplotype 1 that is created as part of the toy example are shown below.
 
-### Phased insertion, deletion, and substitution within a 29bp segment on chromosome 19
+### Phased double and single base substitutions and a deletion within a 29bp segment on chromosome 19
 
 Using the reference, examine the section of DNA that will contain this modification.
 ```
@@ -249,6 +249,48 @@ chr19	10000037	ACGAGCCACTGCCCTCGGCCCAGGGGG	29	0.25}}}$
 This entry deletes 29 base pairs starting from the target locus and replaces them with the sequence specified in field 3 of the config record above. A random sample of 0.25 of all alignments that intersect the 29bp deleted region will be impacted. The effect on the pileup across this region is shown below. Bases impacted by this genomic alteration are highlighted in red. Once the mutation has been spiked in reads from both haplotypes are combined and realigned against the standard reference for downstream processing.
 
 ![pileupEx1](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/3f039391-ee17-4c36-a084-987941f795ca)
+
+### 240bp inversion, chromosome chr19:10000000, 5bp removed at both the 3' and 5' ends.
+
+Examine the section from reference that will contain the inversion.
+```
+$ samtools faidx X1_HG00110.chr19_500KB.fa chr19:10000000-10000250
+>chr19:10000000-10000250
+TCCCGCCTCAGCCGCCCAAAGCATTGGGATTACAGCCGTGAGCCACTGCCCCCGGCCCAG
+GGGGAGCTCTTAAAGCTCCAAGTCAGATCATGTTCCTTCACAAGTGCTCAAGTGGCATCT
+CCTGGTGCTTGGAGTAAAAGCCAAGCGCCTCTCTCTAGTCACAGAGTCAACTATTAGCAC
+AGTGCCTGACACAAGCAGGTGCAGAAGTCAAAAGAGAGACTGGCCTTTCGTGGCTCCAGG
+TAGAAATCCCT
+$
+```
+
+Using the output of this command, create a single line containing this sequence, with the first and last 5 bases removed (using the cut command below). Store it to a temp file.
+
+```
+samtools faidx X1_HG00110.chr19_500KB.fa chr19:10000000-10000250 | egrep -v '>' | tr -d '\012'| cut -c 6-244 > seq.tmp
+```
+
+Store the reverse complement of this sequence (with unix commands, tr 'GCAT' 'CGTA'| rev).
+```
+cat seq.tmp | tr 'GCAT' 'CGTA'| rev > seq.revc.tmp
+```
+
+Create your indel spike-in config file using this inversion. This config record will remove 250bp at locus chr19:10000000 and in its place inserts the 240bp inverted sequence.
+
+```
+printf "chr19\t10000000" > loc.tmp
+printf "250\t0.3" > del_freq.tmp
+paste loc.tmp seq.revc.tmp del_freq.tmp > chr19_10000000_inver.cfg
+```
+
+Spike it in, convert to BAM and index.
+```
+stochasticIndel T_X1_HG00110.chr19_500KB_25x_76bp.bam X1_HG00110.chr19_500KB.fa chr19_10000000_inver.cfg 42
+samtools view -bS T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.sam > T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.bam
+samtools index T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.bam
+```
+
+You can now combine both haplotypes BAMs together and realign against the standard reference for downstream processing.
 
 
 ## List of stochasticSim commands and their formats
