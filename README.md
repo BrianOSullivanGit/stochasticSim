@@ -250,6 +250,37 @@ This entry deletes 29 base pairs starting from the target locus and replaces the
 
 ![pileupEx1](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/3f039391-ee17-4c36-a084-987941f795ca)
 
+### Triplet repeat extension chr19, 3 to 13 CAG repeats.
+
+Examine the existing repeat sequence at this locus in the reference.
+
+```
+toyExample$ samtools faidx X1_HG00110.chr19_500KB.fa chr19:10362269-10362277
+>chr19:10362269-10362277
+CAGCAGCAG
+toyExample$
+```
+
+Create a config entry (stored here in chr19_CAG_repeat.cfg and shown below) that removes the existing 9bp sequence, replacing it with the required 39bp (13 CAG repeats) sequence. In this example we spike in with an allele frequency of 1 (indicating that all reads that intersect the target region will be affected).
+
+
+${\texttt{
+{\color{black}
+chr19	10362269	CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG	9	1}}}$
+
+Spike it in, convert to BAM and index.
+
+```
+toyExample# stochasticIndel T_X1_HG00110.chr19_500KB_25x_76bp.bam X1_HG00110.chr19_500KB.fa chr19_CAG_repeat.cfg 42
+
+toyExample# samtools view -bS T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.sam > T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.bam
+samtools index T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.bam
+```
+
+The the additional repeats are highlighted in red in the pileup (pre-realignment) below. Base read errors (in yellow) are conserved where they occur within the new sequence.
+
+![triplet_repeat](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/326ad982-1973-4628-b474-ef4b2e1f879e)
+
 ### 240bp inversion, chromosome chr19:10000000, 5bp removed at both the 3' and 5' ends.
 
 Examine the section from reference that will contain the inversion.
