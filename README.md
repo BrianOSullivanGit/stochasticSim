@@ -220,14 +220,14 @@ Genomic alterations that require a set of somatic variants to be phased together
 | INSERTION SEQUENCE | The nucleotide sequence representing the DNA that is inserted at the target locus (after any deletion, if required) as a result of the mutation. Set to the '-' character if no bases inserted. |
 | MUTANT ALLELE FREQ | The true mutant allele frequency. |
 
-Any sequence errors encountered by stochasticIndel while spiking in the modification, in the form of reference skips or base substitutions, are left unaltered at the location within the read where they occur. If, by chance, a sequence error corresponds to the base being spiked as part of the modification, then the contents at that locus are set to a different base to maintain a sequence error at that location. Some examples using the BAM file for haplotype 1 that is created as part of the toy example are shown below.
+Any sequence errors encountered by stochasticIndel while spiking in the modification, in the form of reference skips or base substitutions, are left unaltered at the location within the read where they occur. If, by chance, a sequence error corresponds to the base being spiked as part of the modification, then the contents of the read at that locus are set to a different base to maintain a sequence error at that location. Some examples using the BAM file for haplotype 1 that is created as part of the toy example are shown below.
 
-### Phased double and single base substitutions and a deletion within a 29bp segment on chromosome 19
+### Phased, multiple base substitutions and deletion within a 29bp segment on chromosome 19
 
 Using the reference, examine the section of DNA that will contain this modification.
 ```
-$ cd <toy example directory>
-$ samtools faidx X1_HG00110.chr19_500KB.fa chr19:10000037-10000066
+toyExample# cd <toy example directory>
+toyExample# samtools faidx X1_HG00110.chr19_500KB.fa chr19:10000037-10000066
 >chr19:10000037-10000065
 GTGAGCCACTGCCCCCGGCCCAGGGGGAG
 ```
@@ -246,9 +246,13 @@ ${\texttt{
 {\color{black}
 chr19	10000037	ACGAGCCACTGCCCTCGGCCCAGGGGG	29	0.25}}}$
 
-This entry deletes 29 base pairs starting from the target locus and replaces them with the sequence specified in field 3 of the config record above. A random sample of 0.25 of all alignments that intersect the 29bp deleted region will be impacted. The effect on the pileup across this region is shown below. Bases impacted by this genomic alteration are highlighted in red. Once the mutation has been spiked in reads from both haplotypes are combined and realigned against the standard reference for downstream processing.
 
-![pileupEx1](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/3f039391-ee17-4c36-a084-987941f795ca)
+This entry deletes 29 base pairs starting from the target locus and replaces them with the sequence specified in field 3 of the config record above. A random sample of 0.25 of all alignments that intersect the 29bp deleted region will be impacted. The effect on the pileup across this region is shown below. Bases impacted by this genomic alteration are highlighted in red. Once the mutation has been spiked in reads from both haplotypes may be combined and realigned against the standard reference for downstream processing.
+
+
+![exa_pileup1](https://github.com/BrianOSullivanGit/stochasticSim/assets/63290680/aba4509c-dfd4-4300-bd8c-eb4194c1163b)
+
+
 
 ### Triplet repeat extension chr19, 3 to 13 CAG repeats.
 
@@ -262,7 +266,6 @@ toyExample$
 ```
 
 Create a config entry (stored here in chr19_CAG_repeat.cfg and shown below) that removes the existing 9bp sequence, replacing it with the required 39bp (13 CAG repeats) sequence. In this example we spike in with an allele frequency of 1 (indicating that all reads that intersect the target region will be affected).
-
 
 ${\texttt{
 {\color{black}
@@ -285,40 +288,40 @@ The the additional repeats are highlighted in red in the pileup (pre-realignment
 
 Examine the section from reference that will contain the inversion.
 ```
-$ samtools faidx X1_HG00110.chr19_500KB.fa chr19:10000000-10000250
+toyExample# samtools faidx X1_HG00110.chr19_500KB.fa chr19:10000000-10000250
 >chr19:10000000-10000250
 TCCCGCCTCAGCCGCCCAAAGCATTGGGATTACAGCCGTGAGCCACTGCCCCCGGCCCAG
 GGGGAGCTCTTAAAGCTCCAAGTCAGATCATGTTCCTTCACAAGTGCTCAAGTGGCATCT
 CCTGGTGCTTGGAGTAAAAGCCAAGCGCCTCTCTCTAGTCACAGAGTCAACTATTAGCAC
 AGTGCCTGACACAAGCAGGTGCAGAAGTCAAAAGAGAGACTGGCCTTTCGTGGCTCCAGG
 TAGAAATCCCT
-$
+toyExample#
 ```
 
 Using the output of this command, create a single line containing this sequence, with the first and last 5 bases removed (using the cut command below). Store it to a temp file.
 
 ```
-samtools faidx X1_HG00110.chr19_500KB.fa chr19:10000000-10000250 | egrep -v '>' | tr -d '\012'| cut -c 6-244 > seq.tmp
+toyExample# samtools faidx X1_HG00110.chr19_500KB.fa chr19:10000000-10000250 | egrep -v '>' | tr -d '\012'| cut -c 6-244 > seq.tmp
 ```
 
 Store the reverse complement of this sequence (with unix commands, tr 'GCAT' 'CGTA'| rev).
 ```
-cat seq.tmp | tr 'GCAT' 'CGTA'| rev > seq.revc.tmp
+toyExample# cat seq.tmp | tr 'GCAT' 'CGTA'| rev > seq.revc.tmp
 ```
 
 Create your indel spike-in config file using this inversion. This config record will remove 250bp at locus chr19:10000000 and in its place inserts the 240bp inverted sequence.
 
 ```
-printf "chr19\t10000000" > loc.tmp
-printf "250\t0.3" > del_freq.tmp
-paste loc.tmp seq.revc.tmp del_freq.tmp > chr19_10000000_inver.cfg
+toyExample# printf "chr19\t10000000" > loc.tmp
+toyExample# printf "250\t0.3" > del_freq.tmp
+toyExample# paste loc.tmp seq.revc.tmp del_freq.tmp > chr19_10000000_inver.cfg
 ```
 
 Spike it in, convert to BAM and index.
 ```
-stochasticIndel T_X1_HG00110.chr19_500KB_25x_76bp.bam X1_HG00110.chr19_500KB.fa chr19_10000000_inver.cfg 42
-samtools view -bS T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.sam > T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.bam
-samtools index T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.bam
+toyExample# stochasticIndel T_X1_HG00110.chr19_500KB_25x_76bp.bam X1_HG00110.chr19_500KB.fa chr19_10000000_inver.cfg 42
+toyExample# samtools view -bS T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.sam > T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.bam
+toyExample# samtools index T_X1_HG00110.chr19_500KB_25x_76bp.indel_spike.bam
 ```
 
 You can now combine both haplotypes BAMs together and realign against the standard reference for downstream processing.
@@ -592,7 +595,7 @@ where,
 
 **DESCRIPTION**
 
-The tncSpike binary is used to create the required context specific spike-in config file (for use with stochasticSpike). The required burden (specified in total number of variants), trinucleotide context profile (specifying the percentages of that burden that fall within each context) and reference fasta file corresponding to that burden are supplied as command line arguments. tncSpike reads a set of target loci from the stdin while creating the spike-in config file. If a locus falls within the trinucleotide context of a burden required for spike-in a record is generated for that locus together with the required SBS in the spike-in config output file and the outstanding burden for that context is decremented. Generally tncSpike is fed a random set of loci from the target region (to ensure burden is randomly distributed but within the required contexts). The spike-in burden is strand specific, ie., it creates two separate config files, one relating to burden for inserts that align to the forward genomic strand, the other for inserts aligned to the reverse. You will need to match the output config files up with a set of allele frequencies and sort them in coordinate order before they can be used to spiked-into a BAM file with stochasticSpike.
+The tncSpike binary is used to create the required context specific spike-in config file (for use with stochasticSpike). The required burden (specified in total number of variants), trinucleotide context profile (specifying the percentages of that burden that fall within each context) and reference fasta file corresponding to that burden are supplied as command line arguments. tncSpike reads a set of target loci from the stdin while creating the spike-in config file. If a locus falls within the trinucleotide context of a burden required for spike-in a record is generated for us together with the required SBS in the spike-in config output file and the outstanding burden for that context is decremented. Generally tncSpike is fed a random set of loci from the target region (to ensure burden is randomly distributed but within the required contexts). The spike-in burden is strand specific, ie., it creates two separate config files, one relating to burden for inserts that align to the forward genomic strand, the other for inserts aligned to the reverse. You will need to match the output config files up with a set of allele frequencies and sort them in coordinate order before they can be used to spiked-into a BAM file with stochasticSpike.
 
 Example usage is shown below. The first two lines generate a random set of loci from the target (typically 3 times what you need for the burden you require). tncSpike then generates the loci and SBSs required. You match these up with your required set of allele frequencies, sort in coordinate order and then spike them in (stochasticSpike).
 
