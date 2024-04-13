@@ -35,5 +35,5 @@ gtMapper: Makefile
 tncCountsProfile: Makefile	
 	cc -std=c99 tncCountsProfile.c -o ./bin/tncCountsProfile
 clean:
-	rm ./bin/stochasticSpike ./bin/createDonorGenome ./bin/liftover ./bin/targetRef ./bin/condenseLift ./bin/gtMapper ./bin/2wayLiftover ./bin/tncSpike ./bin/vcfAntex ./bin/tncCountsProfile
+	rm ./bin/stochasticSpike ./bin/stochasticIndel ./bin/createDonorGenome ./bin/liftover ./bin/targetRef ./bin/condenseLift ./bin/gtMapper ./bin/2wayLiftover ./bin/tncSpike ./bin/vcfAntex ./bin/tncCountsProfile
 
