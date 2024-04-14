@@ -1,6 +1,6 @@
 HTSLIB_static_LIBS := $(shell bash -c "grep HTSLIB_static_LIBS ${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION}/htslib_static.mk | sed -e 's/.* = //1'")
 
-all: stochasticSpike tncSpike vcfAntex createDonorGenome liftover targetRef condenseLift gtMapper 2wayLiftover tncCountsProfile
+all: stochasticSpike stochasticIndel tncSpike vcfAntex createDonorGenome liftover targetRef condenseLift gtMapper 2wayLiftover tncCountsProfile
 
 stochasticSpike: Makefile
 	cc -std=c99 -Wall -g -O2 -I${SAMTOOLS_BUILD_PATH} -I${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION} -I${SAMTOOLS_BUILD_PATH}/lz4  -o ./bin/stochasticSpike stochasticSpike.c ${SAMTOOLS_BUILD_PATH}/libst.a ${SAMTOOLS_BUILD_PATH}/htslib-${HTSLIB_VERSION}/libhts.a ${HTSLIB_static_LIBS}
