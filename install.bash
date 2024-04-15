@@ -179,6 +179,7 @@ cd ../
 ln -s ../${stochasticSimDirName}/bin/createDonorGenome bin/createDonorGenome
 ln -s ../${stochasticSimDirName}/bin/liftover bin/liftover
 ln -s ../${stochasticSimDirName}/bin/stochasticSpike bin/stochasticSpike
+ln -s ../${stochasticSimDirName}/bin/stochasticIndel bin/stochasticIndel
 ln -s ../${stochasticSimDirName}/bin/targetRef bin/targetRef
 ln -s ../${stochasticSimDirName}/bin/createPersonalisedMaskedTarget.bash bin/createPersonalisedMaskedTarget.bash
 ln -s ../${stochasticSimDirName}/bin/generatePhasedBams.bash bin/generatePhasedBams.bash
@@ -192,6 +193,7 @@ ln -s ../${stochasticSimDirName}/bin/tncCountsProfile bin/tncCountsProfile
 echo "export CREATEDONORGENOME="`pwd`"/${stochasticSimDirName}/bin/createDonorGenome" >> bin/tool.path
 echo "export LIFTOVER="`pwd`"/${stochasticSimDirName}/bin/liftover" >> bin/tool.path
 echo "export STOCHASTIC_SPIKE="`pwd`"/${stochasticSimDirName}/bin/stochasticSpike" >> bin/tool.path
+echo "export STOCHASTIC_INDEL="`pwd`"/${stochasticSimDirName}/bin/stochasticIndel" >> bin/tool.path
 echo "export TARGETREF="`pwd`"/${stochasticSimDirName}/bin/targetRef" >> bin/tool.path
 echo "export CONDENSE_LIFT="`pwd`"/${stochasticSimDirName}/bin/condenseLift" >> bin/tool.path
 echo "export GTMAPPER="`pwd`"/${stochasticSimDirName}/bin/gtMapper" >> bin/tool.path
