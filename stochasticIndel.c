@@ -278,7 +278,9 @@ int selectMutatedQnames(char *targetRegion,
                         AlignmentRecord *mutatedAlignmentRecord,
                         int *mutatedAlignmentCountPtr,
                         int *totalNumberOfMutatedAlignments,
-                        float mutantAlleleFreq)
+                        float mutantAlleleFreq,
+                        FILE * logFileP)
+
 {
    static AlignmentRecord alignmentRecord[MAX_NUM_ALIGNMENTS_IN_TARGET_PILEUP] = {{{0}}};
    int alignmentCount=0;
@@ -302,7 +304,7 @@ int selectMutatedQnames(char *targetRegion,
    bam1_t *b = bam_init1();
 
    // Debug
-   printf("STARTED....\n");
+   //printf("STARTED....\n");
 
    // Iterate through all reads within this region.
    // This will return >= 0 so long are there are still leads left in the pileup.
@@ -358,6 +360,8 @@ int selectMutatedQnames(char *targetRegion,
       i++;
    }
 
+   // mutatedAlignmentCount records the number of inserts that need to be mutated.
+   // totalNumberOfMutatedAlignments records the number of alignments (aligned reads), including mates in overlap where the mutation intersects the overlap region, that need to be mutated.
 
    // Finally find the total number of alignments, including mates in overlap, that we need to mutate.
    // We use this number to tell when we are done spiking in this mutation.
@@ -376,9 +380,17 @@ int selectMutatedQnames(char *targetRegion,
       i++;
    }
 
+   if(*totalNumberOfMutatedAlignments)
+      fprintf(logFileP,"%s AF=%.2f, %d of %d inserts (%d of %d alignments) selected for mutation.", targetRegion, mutantAlleleFreq, *mutatedAlignmentCountPtr, uniqueAlignmentCount, *totalNumberOfMutatedAlignments, alignmentCount);
+   else
+      fprintf(logFileP,"%s AF=%.2f, Zero of %d inserts (%d of %d alignments) selected for mutation. Skipping...\n", targetRegion, mutantAlleleFreq, uniqueAlignmentCount, *totalNumberOfMutatedAlignments, alignmentCount);
+
+
    // Cleanup.
    hts_itr_destroy(iter);
    bam_destroy1(b);
+   
+   printf("."); fflush(stdout);
 
    // Return the coverage in this region.
    return uniqueAlignmentCount;
@@ -496,7 +508,6 @@ void setUpNextTarget(FILE *configFilePtr,
    if(!indelSubRecordPtr->targetLocus) {
       strcpy(targetRegionPtr,"");
       *readReconstructOffsetPtr=0;
-      printf(">>>>>>>>>>>>>>>NO MORE TARGETS<<<<<<<<<<<<<<<<<<<<<<<\n");
       return;
    }
 
@@ -543,7 +554,7 @@ int main(int argc,char* argv[])
    else
       commandName++;
 
-   if(argc!= 3) {
+   if(argc!= 5) {
       fprintf(stderr, "\n Usage: %s <donor BAM> <donor reference> <genomic rearrangement config file> <seed>\n\n",commandName);
       exit(0);
    }
@@ -644,6 +655,30 @@ int main(int argc,char* argv[])
 
    /////////////////////////////////////////////////////////////////////////////////
 
+   // Create the log file which will record details of number of reads mutated at each target.
+   char *tmpP;
+   char *logFnamePtr = malloc(strlen(argv[1])+strlen(".indel_spike.log"));
+   strcpy(logFnamePtr,argv[1]);
+   tmpP=logFnamePtr;
+   tmpP+=strlen(argv[1])-4;
+   strcpy(tmpP,".indel_spike.log");
+   printf("Log file with details of mutated alignments at each target stored as %s.\n",logFnamePtr);
+
+   FILE * logFileP = NULL;
+   logFileP = fopen(logFnamePtr, "w");
+   if(logFileP == NULL) {
+      fprintf(stderr, "\nCan't open log file, %s..\n\n",logFnamePtr);
+      return -1;
+   }
+
+   fprintf(logFileP,"# Command line: ");
+
+   int i;
+   for(i=0; i<argc; i++) {
+      fprintf(logFileP,"%s ",argv[i]);
+   }
+
+   fprintf(logFileP,"\n\n");
 
 
    mutatedAlignmentCount = 0;
@@ -655,9 +690,20 @@ int main(int argc,char* argv[])
    // or skip if we are out of targets (indelSubRecord.targetLocus == 0).
    // TODO!!!! we need to handle the coverage = 0 case here......
    int coverageAtMutatedRegion = 0;
+   
+   // Create the output SAM filename and record this in data...
+   char *outFnamePtr = malloc(strlen(argv[1])+strlen(".indel_spike.sam"));
+   strcpy(outFnamePtr,argv[1]);
+
+   tmpP=outFnamePtr;
+   tmpP+=strlen(argv[1])-4;
+   strcpy(tmpP,".indel_spike.sam");
+   printf("Output file containing spike-in stored as %s.\nSpike-in in progress",outFnamePtr);
+   fflush(stdout);
 
    // Setup first target mutation.
    // Go through the list of targets until you find one with coverage...
+   
    while(coverageAtMutatedRegion == 0) {
       numberOfAlignmentsMutatedSoFar = 0;
 
@@ -677,7 +723,8 @@ int main(int argc,char* argv[])
                                    mutatedAlignmentRecord,
                                    &mutatedAlignmentCount,
                                    &totalNumberOfMutatedAlignments,
-                                   indelSubRecord.mutantAlleleFreq);
+                                   indelSubRecord.mutantAlleleFreq,
+                                   logFileP);
       }
 
       //Debug
@@ -731,15 +778,6 @@ int main(int argc,char* argv[])
 
 
    data[0]->hdr = mutRegionHdr;    // the BAM header we opened earlier
-
-   // Create the output SAM filename and record this in data...
-   char *outFnamePtr = malloc(strlen(argv[1])+strlen(".indel_spike.sam"));
-   strcpy(outFnamePtr,argv[1]);
-   char *tmpP;
-   tmpP=outFnamePtr;
-   tmpP+=strlen(argv[1])-4;
-   strcpy(tmpP,".indel_spike.sam");
-   printf("Output file containing spike-in store as %s.\n",outFnamePtr);
 
    sam_global_args ga = SAM_GLOBAL_ARGS_INIT;
 
@@ -973,6 +1011,8 @@ int main(int argc,char* argv[])
                   // counts and load up the next target mutation.
                   if(numberOfAlignmentsMutatedSoFar == totalNumberOfMutatedAlignments) {
 
+                     // Leave a note in the log file and move onto the next record.
+                     fprintf(logFileP, " %d alignments mutated.\n", numberOfAlignmentsMutatedSoFar);
                      // Debug
                      // printf("numberOfAlignmentsMutatedSoFar = %d,  totalNumberOfMutatedAlignments = %d  LAST ONE!!!!!!!!!!!!!!\n",numberOfAlignmentsMutatedSoFar, totalNumberOfMutatedAlignments);
                      // We are finished with this target.
@@ -985,7 +1025,7 @@ int main(int argc,char* argv[])
                      int coverageAtMutatedRegion = 0;
 
                      // Look through the list of remaining targets until you find the first one with coverage...
-                     while(coverageAtMutatedRegion == 0 && indelSubRecord.targetLocus) {
+                     while((coverageAtMutatedRegion == 0 || mutatedAlignmentCount == 0) && indelSubRecord.targetLocus) {
 
                         // Setup next target mutation.
                         setUpNextTarget(configFileP,
@@ -1003,21 +1043,20 @@ int main(int argc,char* argv[])
                                                      mutatedAlignmentRecord,
                                                      &mutatedAlignmentCount,
                                                      &totalNumberOfMutatedAlignments,
-                                                     indelSubRecord.mutantAlleleFreq);
+                                                     indelSubRecord.mutantAlleleFreq,
+                                                     logFileP);
+
+                           if(coverageAtMutatedRegion == 0) {
+                              // Leave a no coverage note in the log file..
+                              fprintf(logFileP,"%s No coverage. Skipping...\n", targetRegion);
+                           }
                         }
-
-
-                        //if(!indelSubRecord.targetLocus)
-                        //   printf(">>>>>>>>>>>>>>>AT MARK, END OF CONFIG<<<<<<<<<<<<<<<<<<<<<<<\n");
-                        //else
-                        //   printf(">>>>>>>>>>>>>>>AT MARK, MORE IN CONFIG<<<<<<<<<<<<<<<<<<<<<<<%d,%ld,%s\n",pos,indelSubRecord.targetLocus,indelSubRecord.insertionSequence);
-
                      }
 
 
 
                      if(!indelSubRecord.targetLocus)
-                        printf(">>>>>>>>>>>>>>>>>>>>DONE<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+                           printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>NO MORE TARGETS, FINISH WRITING BAM<<<<<<<<<<<<<<<<<<<<\n");
                   }
                }
             }
@@ -1048,7 +1087,7 @@ int main(int argc,char* argv[])
 
    }
 
-   printf("CLEANING UP..\n");
+   printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CLEANING UP..<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
 
    // Clean up.
    for(int i = 0; i < NUM_BAMS && data[i]; ++i) {
@@ -1065,7 +1104,6 @@ int main(int argc,char* argv[])
    sam_close(mutReadsFd);
 
    free(outFnamePtr);
-
+   printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DONE.<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
 }
-
 
