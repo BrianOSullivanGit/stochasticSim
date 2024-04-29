@@ -389,8 +389,9 @@ int selectMutatedQnames(char *targetRegion,
    // Cleanup.
    hts_itr_destroy(iter);
    bam_destroy1(b);
-   
-   printf("."); fflush(stdout);
+
+   printf(".");
+   fflush(stdout);
 
    // Return the coverage in this region.
    return uniqueAlignmentCount;
@@ -690,7 +691,7 @@ int main(int argc,char* argv[])
    // or skip if we are out of targets (indelSubRecord.targetLocus == 0).
    // TODO!!!! we need to handle the coverage = 0 case here......
    int coverageAtMutatedRegion = 0;
-   
+
    // Create the output SAM filename and record this in data...
    char *outFnamePtr = malloc(strlen(argv[1])+strlen(".indel_spike.sam"));
    strcpy(outFnamePtr,argv[1]);
@@ -703,7 +704,7 @@ int main(int argc,char* argv[])
 
    // Setup first target mutation.
    // Go through the list of targets until you find one with coverage...
-   
+
    while(coverageAtMutatedRegion == 0) {
       numberOfAlignmentsMutatedSoFar = 0;
 
@@ -727,9 +728,11 @@ int main(int argc,char* argv[])
                                    logFileP);
       }
 
-      //Debug
-      if(!indelSubRecord.targetLocus)
+      // Exit if we get to the end of the config file with finding any targets with coverage.
+      if(!indelSubRecord.targetLocus) {
          fprintf(stderr,"No targets with coverage..\n");
+         exit(-1);
+      }
 
    }
 
@@ -1056,7 +1059,7 @@ int main(int argc,char* argv[])
 
 
                      if(!indelSubRecord.targetLocus)
-                           printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>NO MORE TARGETS, FINISH WRITING BAM<<<<<<<<<<<<<<<<<<<<\n");
+                        printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>NO MORE TARGETS, FINISH WRITING BAM<<<<<<<<<<<<<<<<<<<<\n");
                   }
                }
             }
