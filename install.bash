@@ -23,7 +23,7 @@
 #
 #                      bwa 0.7.17.
 #                      samtools 1.13
-#                      bedtools 2.29.2
+#                      bedtools 2.31.1
 #
 #               You may if you wish use other versions of these tools you already have installed
 #               on your system. They will probably work, however as I have not tested it, I can not
@@ -123,8 +123,8 @@ echo "export READ_SIMULATOR="`pwd`"/art_bin_MountRainier/art_illumina" >> bin/to
 
 # Bedtools
 date | tr '\012' ':'
-echo " Build bedtools 2.29.2"	
-curl -L https://github.com/arq5x/bedtools2/releases/download/v2.29.2/bedtools-2.29.2.tar.gz | tar zxvf - || { echo -e "\n\033[7mBEDTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
+echo " Build bedtools 2.31.1"	
+curl -L https://github.com/arq5x/bedtools2/releases/download/v2.31.1/bedtools-2.31.1.tar.gz | tar zxvf - || { echo -e "\n\033[7mBEDTOOLS download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
 cd bedtools2/
 # Fix for bedtools install issue with some verion of Mac (clang) compiler.
 # There may also be a problem with python "not found" (ie., a 2.7 -> 3.0 thing)
