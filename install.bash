@@ -109,10 +109,10 @@ echo " Install ART read simulator (mountrainier2016) binaries."
 # Just install binaries..
 if [ "$(uname)" == "Darwin" ]; then
     # Install under Mac OS X platform
-    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05macos64.tgz | tar zxvf - || { echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
+    curl -L https://www.niehs.nih.gov/sites/default/files/2024-02/artbinmountrainier2016.06.05macos64.tgz | tar zxvf - || { echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     # Install under GNU/Linux platform
-    curl -L https://www.niehs.nih.gov/research/resources/assets/docs/artbinmountrainier2016.06.05linux64.tgz | tar zxvf - || { echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
+    curl -L https://www.niehs.nih.gov/sites/default/files/2024-02/artbinmountrainier2016.06.05linux64.tgz | tar zxvf - || { echo -e "\n\033[7mART download failed. Resolve issues before proceeding.\033[0m";exit 1; } 
 else
     echo "Platform \"$(uname)\" not supported...exiting..."
     exit 5
