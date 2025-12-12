@@ -105,7 +105,7 @@ the required versions of associated software tools.
 ```
 source <install path>/stochasticSimFramework/stochasticSim-main/bin/tool.path
 ```
-Now, enter the toy example directory and run the simulation,
+Now, enter the toy example directory. You'll need approximately 5 GB of RAM to run the included toy example. The example has not been tested on systems with less memory. If your system is suitable, run the simulation,
 ```
 cd <install path>/stochasticSimFramework/stochasticSim-main/toyExample
 ./run.bash 50 chr19_500KB.bed
